@@ -1,0 +1,15 @@
+# Build / deps
+/bin/
+node_modules/
+dist/
+*.test
+*.out
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+
+# Go workspace (local dev only)
+go.work
+go.work.sum
