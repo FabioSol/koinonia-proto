@@ -641,6 +641,7 @@ type CommitRequest struct {
 	ContentHash     string                 `protobuf:"bytes,3,opt,name=content_hash,json=contentHash,proto3" json:"content_hash,omitempty"`
 	FrontmatterJson []byte                 `protobuf:"bytes,4,opt,name=frontmatter_json,json=frontmatterJson,proto3" json:"frontmatter_json,omitempty"` // client-parsed; server validates vs space schema
 	DraftId         string                 `protobuf:"bytes,5,opt,name=draft_id,json=draftId,proto3" json:"draft_id,omitempty"`
+	SizeBytes       int64                  `protobuf:"varint,6,opt,name=size_bytes,json=sizeBytes,proto3" json:"size_bytes,omitempty"` // client-known blob size (registered for dedup + size reporting)
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -708,6 +709,13 @@ func (x *CommitRequest) GetDraftId() string {
 		return x.DraftId
 	}
 	return ""
+}
+
+func (x *CommitRequest) GetSizeBytes() int64 {
+	if x != nil {
+		return x.SizeBytes
+	}
+	return 0
 }
 
 type CommitResponse struct {
@@ -1079,14 +1087,16 @@ const file_koinonia_v1_koinonia_proto_rawDesc = "" +
 	"\x0fPresignResponse\x12\x10\n" +
 	"\x03url\x18\x01 \x01(\tR\x03url\x12\x1d\n" +
 	"\n" +
-	"expires_at\x18\x02 \x01(\x03R\texpiresAt\"\xc2\x01\n" +
+	"expires_at\x18\x02 \x01(\x03R\texpiresAt\"\xe1\x01\n" +
 	"\rCommitRequest\x12\x1d\n" +
 	"\n" +
 	"logical_id\x18\x01 \x01(\tR\tlogicalId\x12)\n" +
 	"\x10expected_version\x18\x02 \x01(\x05R\x0fexpectedVersion\x12!\n" +
 	"\fcontent_hash\x18\x03 \x01(\tR\vcontentHash\x12)\n" +
 	"\x10frontmatter_json\x18\x04 \x01(\fR\x0ffrontmatterJson\x12\x19\n" +
-	"\bdraft_id\x18\x05 \x01(\tR\adraftId\"1\n" +
+	"\bdraft_id\x18\x05 \x01(\tR\adraftId\x12\x1d\n" +
+	"\n" +
+	"size_bytes\x18\x06 \x01(\x03R\tsizeBytes\"1\n" +
 	"\x0eCommitResponse\x12\x1f\n" +
 	"\vnew_version\x18\x01 \x01(\x05R\n" +
 	"newVersion\"+\n" +

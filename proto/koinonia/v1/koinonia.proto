@@ -96,6 +96,7 @@ message CommitRequest {
   string content_hash = 3;
   bytes frontmatter_json = 4; // client-parsed; server validates vs space schema
   string draft_id = 5;
+  int64 size_bytes = 6;       // client-known blob size (registered for dedup + size reporting)
 }
 message CommitResponse {
   int32 new_version = 1;
