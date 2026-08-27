@@ -16,7 +16,12 @@ CREATE TABLE nodes (
     id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     logical_id   UUID NOT NULL,                 -- stable identity across versions/drafts
     space_id     UUID NOT NULL REFERENCES spaces(id) ON DELETE CASCADE,
-    parent_id    UUID REFERENCES nodes(id) ON DELETE CASCADE,  -- NULL = root
+    parent_id    UUID,                           -- parent's LOGICAL id (NULL = root).
+                                                 -- No FK: logical_id is not unique
+                                                 -- (a node has many rows across
+                                                 -- versions/drafts), so children must
+                                                 -- reference the stable logical id, and
+                                                 -- FUSE navigates by it.
     name         TEXT NOT NULL,
     kind         TEXT NOT NULL CHECK (kind IN ('space','section','article','folder')),
     draft_id     TEXT,                          -- NULL = main
