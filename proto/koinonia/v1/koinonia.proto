@@ -1,0 +1,126 @@
+syntax = "proto3";
+
+package koinonia.v1;
+
+option go_package = "github.com/FabioSol/koinonia-proto/gen/koinonia/v1;koinoniav1";
+
+// KoinoniaService is the core client<->backend contract: namespace/metadata RPCs,
+// blob presign (bytes are never proxied through the API), OCC/CAS writes, draft
+// publish, and a real-time invalidation stream.
+//
+// Conflicts are returned as gRPC status codes the FUSE client maps to errno:
+//   FAILED_PRECONDITION (409) -> ESTALE   (version conflict)
+//   INVALID_ARGUMENT    (422) -> EINVAL   (bad frontmatter)
+//   PERMISSION_DENIED   (403) -> EACCES   (RBAC / branch protection)
+//   NOT_FOUND                 -> ENOENT   (tombstone)
+//   UNAVAILABLE               -> EAGAIN   (co-edit advisory lock)
+// See koinonia-proto/docs/adrs/0002-grpc-service-contract.md.
+service KoinoniaService {
+  // Namespace / metadata (hot path).
+  rpc Lookup(LookupRequest) returns (LookupResponse);
+  rpc ReadDir(ReadDirRequest) returns (ReadDirResponse);
+  rpc Getattr(GetattrRequest) returns (GetattrResponse);
+
+  // Blobs: presigned URLs to an S3-compatible store; dedup pre-check.
+  rpc BlobExists(BlobExistsRequest) returns (BlobExistsResponse);
+  rpc PresignGet(PresignRequest) returns (PresignResponse);
+  rpc PresignPut(PresignRequest) returns (PresignResponse);
+
+  // Writes (OCC/CAS) and atomic draft publish.
+  rpc Commit(CommitRequest) returns (CommitResponse);
+  rpc Publish(PublishRequest) returns (PublishResponse);
+
+  // Real-time cache invalidation (thin deltas, no content).
+  rpc Subscribe(SubscribeRequest) returns (stream Invalidation);
+}
+
+// A node in the tree (HEAD view). draft_id empty = main.
+message Node {
+  string logical_id = 1;
+  string parent_id = 2;
+  string name = 3;
+  string kind = 4;            // space|section|article|folder
+  string draft_id = 5;
+  string content_hash = 6;    // SHA-256; empty for pure folders
+  bytes frontmatter_json = 7;
+  int32 version = 8;
+  bool is_deleted = 9;
+}
+
+message LookupRequest {
+  string parent_id = 1;
+  string name = 2;
+  string draft_id = 3;
+}
+message LookupResponse {
+  Node node = 1;
+}
+
+message ReadDirRequest {
+  string parent_id = 1;
+  string draft_id = 2;
+}
+message ReadDirResponse {
+  repeated Node nodes = 1;
+}
+
+message GetattrRequest {
+  string logical_id = 1;
+  string draft_id = 2;
+}
+message GetattrResponse {
+  Node node = 1;
+  int64 mtime_epoch = 2;      // base_epoch + version (deterministic)
+  int64 size_bytes = 3;
+}
+
+message BlobExistsRequest {
+  string content_hash = 1;
+}
+message BlobExistsResponse {
+  bool exists = 1;
+}
+
+message PresignRequest {
+  string content_hash = 1;
+  string logical_id = 2;      // for RBAC scoping of the presign
+}
+message PresignResponse {
+  string url = 1;
+  int64 expires_at = 2;
+}
+
+message CommitRequest {
+  string logical_id = 1;
+  int32 expected_version = 2; // handle.baseVersion (immutable per open handle)
+  string content_hash = 3;
+  bytes frontmatter_json = 4; // client-parsed; server validates vs space schema
+  string draft_id = 5;
+}
+message CommitResponse {
+  int32 new_version = 1;
+}
+
+message PublishRequest {
+  string draft_id = 1;
+}
+message PublishResponse {
+  bool ok = 1;
+  repeated ConflictFile conflicts = 2; // populated when ok = false (409)
+}
+message ConflictFile {
+  string logical_id = 1;
+  string path = 2;
+  int32 base_version = 3;
+  int32 current_version = 4;
+}
+
+message SubscribeRequest {
+  string space_id = 1;
+}
+message Invalidation {
+  string logical_id = 1;
+  int32 version = 2;
+  string draft_id = 3;
+  string parent_id = 4;
+}

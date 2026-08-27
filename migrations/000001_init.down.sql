@@ -1,0 +1,4 @@
+-- 000001_init (down)
+DROP TABLE IF EXISTS blobs;
+DROP TABLE IF EXISTS nodes;
+DROP TABLE IF EXISTS spaces;

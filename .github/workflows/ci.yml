@@ -6,10 +6,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # needed for buf breaking against main
       - uses: actions/setup-go@v5
         with:
           go-version: '1.26'
           cache: false
+      # Pinned codegen plugins so the generate-drift check is deterministic.
+      - run: |
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.12
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.6.2
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+      - uses: bufbuild/buf-setup-action@v1
+        with:
+          version: 1.72.0
+      - run: buf lint
+      - run: buf breaking --against '.git#branch=main'
+      - name: generated code is up to date
+        run: |
+          buf generate
+          git diff --exit-code -- gen
       - run: go build ./...
       - run: go vet ./...
       - run: go test ./...

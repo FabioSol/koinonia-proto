@@ -1,0 +1,15 @@
+version: v2
+modules:
+  - path: proto
+lint:
+  use:
+    - STANDARD
+  except:
+    # v0 pragmatics: RPCs return domain messages (e.g. Node) and Presign reuses
+    # one request/response pair for Get/Put. Revisit before v1.
+    - RPC_REQUEST_RESPONSE_UNIQUE
+    - RPC_RESPONSE_STANDARD_NAME
+    - RPC_REQUEST_STANDARD_NAME
+breaking:
+  use:
+    - FILE
