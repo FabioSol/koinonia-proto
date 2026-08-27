@@ -37,4 +37,4 @@ A single shared module holding (1) the PostgreSQL schema + migrations and (2) th
 
 ## Further Notes
 
-Keep `<ORG>` module path consistent across repos; strip `replace` directives before tagging releases (general ADR-0001).
+Keep `FabioSol` module path consistent across repos; strip `replace` directives before tagging releases (general ADR-0001).
