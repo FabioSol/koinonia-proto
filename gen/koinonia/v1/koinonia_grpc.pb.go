@@ -19,15 +19,19 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	KoinoniaService_Lookup_FullMethodName     = "/koinonia.v1.KoinoniaService/Lookup"
-	KoinoniaService_ReadDir_FullMethodName    = "/koinonia.v1.KoinoniaService/ReadDir"
-	KoinoniaService_Getattr_FullMethodName    = "/koinonia.v1.KoinoniaService/Getattr"
-	KoinoniaService_BlobExists_FullMethodName = "/koinonia.v1.KoinoniaService/BlobExists"
-	KoinoniaService_PresignGet_FullMethodName = "/koinonia.v1.KoinoniaService/PresignGet"
-	KoinoniaService_PresignPut_FullMethodName = "/koinonia.v1.KoinoniaService/PresignPut"
-	KoinoniaService_Commit_FullMethodName     = "/koinonia.v1.KoinoniaService/Commit"
-	KoinoniaService_Publish_FullMethodName    = "/koinonia.v1.KoinoniaService/Publish"
-	KoinoniaService_Subscribe_FullMethodName  = "/koinonia.v1.KoinoniaService/Subscribe"
+	KoinoniaService_Lookup_FullMethodName      = "/koinonia.v1.KoinoniaService/Lookup"
+	KoinoniaService_ReadDir_FullMethodName     = "/koinonia.v1.KoinoniaService/ReadDir"
+	KoinoniaService_Getattr_FullMethodName     = "/koinonia.v1.KoinoniaService/Getattr"
+	KoinoniaService_BlobExists_FullMethodName  = "/koinonia.v1.KoinoniaService/BlobExists"
+	KoinoniaService_PresignGet_FullMethodName  = "/koinonia.v1.KoinoniaService/PresignGet"
+	KoinoniaService_PresignPut_FullMethodName  = "/koinonia.v1.KoinoniaService/PresignPut"
+	KoinoniaService_Commit_FullMethodName      = "/koinonia.v1.KoinoniaService/Commit"
+	KoinoniaService_Delete_FullMethodName      = "/koinonia.v1.KoinoniaService/Delete"
+	KoinoniaService_Publish_FullMethodName     = "/koinonia.v1.KoinoniaService/Publish"
+	KoinoniaService_AsOfLookup_FullMethodName  = "/koinonia.v1.KoinoniaService/AsOfLookup"
+	KoinoniaService_AsOfReadDir_FullMethodName = "/koinonia.v1.KoinoniaService/AsOfReadDir"
+	KoinoniaService_NodeHistory_FullMethodName = "/koinonia.v1.KoinoniaService/NodeHistory"
+	KoinoniaService_Subscribe_FullMethodName   = "/koinonia.v1.KoinoniaService/Subscribe"
 )
 
 // KoinoniaServiceClient is the client API for KoinoniaService service.
@@ -58,7 +62,12 @@ type KoinoniaServiceClient interface {
 	PresignPut(ctx context.Context, in *PresignRequest, opts ...grpc.CallOption) (*PresignResponse, error)
 	// Writes (OCC/CAS) and atomic draft publish.
 	Commit(ctx context.Context, in *CommitRequest, opts ...grpc.CallOption) (*CommitResponse, error)
+	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error)
 	Publish(ctx context.Context, in *PublishRequest, opts ...grpc.CallOption) (*PublishResponse, error)
+	// Time travel: resolve state as-of a global commit seq, and list a node's history.
+	AsOfLookup(ctx context.Context, in *AsOfLookupRequest, opts ...grpc.CallOption) (*LookupResponse, error)
+	AsOfReadDir(ctx context.Context, in *AsOfReadDirRequest, opts ...grpc.CallOption) (*ReadDirResponse, error)
+	NodeHistory(ctx context.Context, in *NodeHistoryRequest, opts ...grpc.CallOption) (*NodeHistoryResponse, error)
 	// Real-time cache invalidation (thin deltas, no content).
 	Subscribe(ctx context.Context, in *SubscribeRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Invalidation], error)
 }
@@ -141,10 +150,50 @@ func (c *koinoniaServiceClient) Commit(ctx context.Context, in *CommitRequest, o
 	return out, nil
 }
 
+func (c *koinoniaServiceClient) Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_Delete_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *koinoniaServiceClient) Publish(ctx context.Context, in *PublishRequest, opts ...grpc.CallOption) (*PublishResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(PublishResponse)
 	err := c.cc.Invoke(ctx, KoinoniaService_Publish_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) AsOfLookup(ctx context.Context, in *AsOfLookupRequest, opts ...grpc.CallOption) (*LookupResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LookupResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_AsOfLookup_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) AsOfReadDir(ctx context.Context, in *AsOfReadDirRequest, opts ...grpc.CallOption) (*ReadDirResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ReadDirResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_AsOfReadDir_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) NodeHistory(ctx context.Context, in *NodeHistoryRequest, opts ...grpc.CallOption) (*NodeHistoryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(NodeHistoryResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_NodeHistory_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -198,7 +247,12 @@ type KoinoniaServiceServer interface {
 	PresignPut(context.Context, *PresignRequest) (*PresignResponse, error)
 	// Writes (OCC/CAS) and atomic draft publish.
 	Commit(context.Context, *CommitRequest) (*CommitResponse, error)
+	Delete(context.Context, *DeleteRequest) (*DeleteResponse, error)
 	Publish(context.Context, *PublishRequest) (*PublishResponse, error)
+	// Time travel: resolve state as-of a global commit seq, and list a node's history.
+	AsOfLookup(context.Context, *AsOfLookupRequest) (*LookupResponse, error)
+	AsOfReadDir(context.Context, *AsOfReadDirRequest) (*ReadDirResponse, error)
+	NodeHistory(context.Context, *NodeHistoryRequest) (*NodeHistoryResponse, error)
 	// Real-time cache invalidation (thin deltas, no content).
 	Subscribe(*SubscribeRequest, grpc.ServerStreamingServer[Invalidation]) error
 	mustEmbedUnimplementedKoinoniaServiceServer()
@@ -232,8 +286,20 @@ func (UnimplementedKoinoniaServiceServer) PresignPut(context.Context, *PresignRe
 func (UnimplementedKoinoniaServiceServer) Commit(context.Context, *CommitRequest) (*CommitResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Commit not implemented")
 }
+func (UnimplementedKoinoniaServiceServer) Delete(context.Context, *DeleteRequest) (*DeleteResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method Delete not implemented")
+}
 func (UnimplementedKoinoniaServiceServer) Publish(context.Context, *PublishRequest) (*PublishResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Publish not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) AsOfLookup(context.Context, *AsOfLookupRequest) (*LookupResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AsOfLookup not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) AsOfReadDir(context.Context, *AsOfReadDirRequest) (*ReadDirResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AsOfReadDir not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) NodeHistory(context.Context, *NodeHistoryRequest) (*NodeHistoryResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method NodeHistory not implemented")
 }
 func (UnimplementedKoinoniaServiceServer) Subscribe(*SubscribeRequest, grpc.ServerStreamingServer[Invalidation]) error {
 	return status.Error(codes.Unimplemented, "method Subscribe not implemented")
@@ -385,6 +451,24 @@ func _KoinoniaService_Commit_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _KoinoniaService_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).Delete(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_Delete_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).Delete(ctx, req.(*DeleteRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _KoinoniaService_Publish_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(PublishRequest)
 	if err := dec(in); err != nil {
@@ -399,6 +483,60 @@ func _KoinoniaService_Publish_Handler(srv interface{}, ctx context.Context, dec 
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(KoinoniaServiceServer).Publish(ctx, req.(*PublishRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_AsOfLookup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AsOfLookupRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).AsOfLookup(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_AsOfLookup_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).AsOfLookup(ctx, req.(*AsOfLookupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_AsOfReadDir_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AsOfReadDirRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).AsOfReadDir(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_AsOfReadDir_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).AsOfReadDir(ctx, req.(*AsOfReadDirRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_NodeHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NodeHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).NodeHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_NodeHistory_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).NodeHistory(ctx, req.(*NodeHistoryRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -450,8 +588,24 @@ var KoinoniaService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _KoinoniaService_Commit_Handler,
 		},
 		{
+			MethodName: "Delete",
+			Handler:    _KoinoniaService_Delete_Handler,
+		},
+		{
 			MethodName: "Publish",
 			Handler:    _KoinoniaService_Publish_Handler,
+		},
+		{
+			MethodName: "AsOfLookup",
+			Handler:    _KoinoniaService_AsOfLookup_Handler,
+		},
+		{
+			MethodName: "AsOfReadDir",
+			Handler:    _KoinoniaService_AsOfReadDir_Handler,
+		},
+		{
+			MethodName: "NodeHistory",
+			Handler:    _KoinoniaService_NodeHistory_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

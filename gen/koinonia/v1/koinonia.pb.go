@@ -762,6 +762,386 @@ func (x *CommitResponse) GetNewVersion() int32 {
 	return 0
 }
 
+type DeleteRequest struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	LogicalId       string                 `protobuf:"bytes,1,opt,name=logical_id,json=logicalId,proto3" json:"logical_id,omitempty"`
+	ExpectedVersion int32                  `protobuf:"varint,2,opt,name=expected_version,json=expectedVersion,proto3" json:"expected_version,omitempty"`
+	DraftId         string                 `protobuf:"bytes,3,opt,name=draft_id,json=draftId,proto3" json:"draft_id,omitempty"` // "" = tombstone main; else draft whiteout
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *DeleteRequest) Reset() {
+	*x = DeleteRequest{}
+	mi := &file_koinonia_v1_koinonia_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteRequest) ProtoMessage() {}
+
+func (x *DeleteRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_koinonia_v1_koinonia_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteRequest.ProtoReflect.Descriptor instead.
+func (*DeleteRequest) Descriptor() ([]byte, []int) {
+	return file_koinonia_v1_koinonia_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *DeleteRequest) GetLogicalId() string {
+	if x != nil {
+		return x.LogicalId
+	}
+	return ""
+}
+
+func (x *DeleteRequest) GetExpectedVersion() int32 {
+	if x != nil {
+		return x.ExpectedVersion
+	}
+	return 0
+}
+
+func (x *DeleteRequest) GetDraftId() string {
+	if x != nil {
+		return x.DraftId
+	}
+	return ""
+}
+
+type DeleteResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	NewVersion    int32                  `protobuf:"varint,1,opt,name=new_version,json=newVersion,proto3" json:"new_version,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteResponse) Reset() {
+	*x = DeleteResponse{}
+	mi := &file_koinonia_v1_koinonia_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteResponse) ProtoMessage() {}
+
+func (x *DeleteResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_koinonia_v1_koinonia_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteResponse.ProtoReflect.Descriptor instead.
+func (*DeleteResponse) Descriptor() ([]byte, []int) {
+	return file_koinonia_v1_koinonia_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *DeleteResponse) GetNewVersion() int32 {
+	if x != nil {
+		return x.NewVersion
+	}
+	return 0
+}
+
+type AsOfLookupRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ParentId      string                 `protobuf:"bytes,1,opt,name=parent_id,json=parentId,proto3" json:"parent_id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Seq           int64                  `protobuf:"varint,3,opt,name=seq,proto3" json:"seq,omitempty"` // global commit seq; resolves the state as-of this point
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AsOfLookupRequest) Reset() {
+	*x = AsOfLookupRequest{}
+	mi := &file_koinonia_v1_koinonia_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AsOfLookupRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AsOfLookupRequest) ProtoMessage() {}
+
+func (x *AsOfLookupRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_koinonia_v1_koinonia_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AsOfLookupRequest.ProtoReflect.Descriptor instead.
+func (*AsOfLookupRequest) Descriptor() ([]byte, []int) {
+	return file_koinonia_v1_koinonia_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *AsOfLookupRequest) GetParentId() string {
+	if x != nil {
+		return x.ParentId
+	}
+	return ""
+}
+
+func (x *AsOfLookupRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *AsOfLookupRequest) GetSeq() int64 {
+	if x != nil {
+		return x.Seq
+	}
+	return 0
+}
+
+type AsOfReadDirRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ParentId      string                 `protobuf:"bytes,1,opt,name=parent_id,json=parentId,proto3" json:"parent_id,omitempty"`
+	Seq           int64                  `protobuf:"varint,2,opt,name=seq,proto3" json:"seq,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AsOfReadDirRequest) Reset() {
+	*x = AsOfReadDirRequest{}
+	mi := &file_koinonia_v1_koinonia_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AsOfReadDirRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AsOfReadDirRequest) ProtoMessage() {}
+
+func (x *AsOfReadDirRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_koinonia_v1_koinonia_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AsOfReadDirRequest.ProtoReflect.Descriptor instead.
+func (*AsOfReadDirRequest) Descriptor() ([]byte, []int) {
+	return file_koinonia_v1_koinonia_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *AsOfReadDirRequest) GetParentId() string {
+	if x != nil {
+		return x.ParentId
+	}
+	return ""
+}
+
+func (x *AsOfReadDirRequest) GetSeq() int64 {
+	if x != nil {
+		return x.Seq
+	}
+	return 0
+}
+
+type NodeHistoryRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	LogicalId     string                 `protobuf:"bytes,1,opt,name=logical_id,json=logicalId,proto3" json:"logical_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *NodeHistoryRequest) Reset() {
+	*x = NodeHistoryRequest{}
+	mi := &file_koinonia_v1_koinonia_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *NodeHistoryRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NodeHistoryRequest) ProtoMessage() {}
+
+func (x *NodeHistoryRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_koinonia_v1_koinonia_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NodeHistoryRequest.ProtoReflect.Descriptor instead.
+func (*NodeHistoryRequest) Descriptor() ([]byte, []int) {
+	return file_koinonia_v1_koinonia_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *NodeHistoryRequest) GetLogicalId() string {
+	if x != nil {
+		return x.LogicalId
+	}
+	return ""
+}
+
+type NodeHistoryResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Entries       []*HistoryEntry        `protobuf:"bytes,1,rep,name=entries,proto3" json:"entries,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *NodeHistoryResponse) Reset() {
+	*x = NodeHistoryResponse{}
+	mi := &file_koinonia_v1_koinonia_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *NodeHistoryResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NodeHistoryResponse) ProtoMessage() {}
+
+func (x *NodeHistoryResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_koinonia_v1_koinonia_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NodeHistoryResponse.ProtoReflect.Descriptor instead.
+func (*NodeHistoryResponse) Descriptor() ([]byte, []int) {
+	return file_koinonia_v1_koinonia_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *NodeHistoryResponse) GetEntries() []*HistoryEntry {
+	if x != nil {
+		return x.Entries
+	}
+	return nil
+}
+
+type HistoryEntry struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Seq           int64                  `protobuf:"varint,1,opt,name=seq,proto3" json:"seq,omitempty"`
+	Version       int32                  `protobuf:"varint,2,opt,name=version,proto3" json:"version,omitempty"`
+	ContentHash   string                 `protobuf:"bytes,3,opt,name=content_hash,json=contentHash,proto3" json:"content_hash,omitempty"`
+	CreatedAt     int64                  `protobuf:"varint,4,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"` // unix seconds
+	IsDeleted     bool                   `protobuf:"varint,5,opt,name=is_deleted,json=isDeleted,proto3" json:"is_deleted,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *HistoryEntry) Reset() {
+	*x = HistoryEntry{}
+	mi := &file_koinonia_v1_koinonia_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HistoryEntry) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HistoryEntry) ProtoMessage() {}
+
+func (x *HistoryEntry) ProtoReflect() protoreflect.Message {
+	mi := &file_koinonia_v1_koinonia_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HistoryEntry.ProtoReflect.Descriptor instead.
+func (*HistoryEntry) Descriptor() ([]byte, []int) {
+	return file_koinonia_v1_koinonia_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *HistoryEntry) GetSeq() int64 {
+	if x != nil {
+		return x.Seq
+	}
+	return 0
+}
+
+func (x *HistoryEntry) GetVersion() int32 {
+	if x != nil {
+		return x.Version
+	}
+	return 0
+}
+
+func (x *HistoryEntry) GetContentHash() string {
+	if x != nil {
+		return x.ContentHash
+	}
+	return ""
+}
+
+func (x *HistoryEntry) GetCreatedAt() int64 {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return 0
+}
+
+func (x *HistoryEntry) GetIsDeleted() bool {
+	if x != nil {
+		return x.IsDeleted
+	}
+	return false
+}
+
 type PublishRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	DraftId       string                 `protobuf:"bytes,1,opt,name=draft_id,json=draftId,proto3" json:"draft_id,omitempty"`
@@ -771,7 +1151,7 @@ type PublishRequest struct {
 
 func (x *PublishRequest) Reset() {
 	*x = PublishRequest{}
-	mi := &file_koinonia_v1_koinonia_proto_msgTypes[13]
+	mi := &file_koinonia_v1_koinonia_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -783,7 +1163,7 @@ func (x *PublishRequest) String() string {
 func (*PublishRequest) ProtoMessage() {}
 
 func (x *PublishRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_koinonia_v1_koinonia_proto_msgTypes[13]
+	mi := &file_koinonia_v1_koinonia_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -796,7 +1176,7 @@ func (x *PublishRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PublishRequest.ProtoReflect.Descriptor instead.
 func (*PublishRequest) Descriptor() ([]byte, []int) {
-	return file_koinonia_v1_koinonia_proto_rawDescGZIP(), []int{13}
+	return file_koinonia_v1_koinonia_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *PublishRequest) GetDraftId() string {
@@ -816,7 +1196,7 @@ type PublishResponse struct {
 
 func (x *PublishResponse) Reset() {
 	*x = PublishResponse{}
-	mi := &file_koinonia_v1_koinonia_proto_msgTypes[14]
+	mi := &file_koinonia_v1_koinonia_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -828,7 +1208,7 @@ func (x *PublishResponse) String() string {
 func (*PublishResponse) ProtoMessage() {}
 
 func (x *PublishResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_koinonia_v1_koinonia_proto_msgTypes[14]
+	mi := &file_koinonia_v1_koinonia_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -841,7 +1221,7 @@ func (x *PublishResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PublishResponse.ProtoReflect.Descriptor instead.
 func (*PublishResponse) Descriptor() ([]byte, []int) {
-	return file_koinonia_v1_koinonia_proto_rawDescGZIP(), []int{14}
+	return file_koinonia_v1_koinonia_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *PublishResponse) GetOk() bool {
@@ -870,7 +1250,7 @@ type ConflictFile struct {
 
 func (x *ConflictFile) Reset() {
 	*x = ConflictFile{}
-	mi := &file_koinonia_v1_koinonia_proto_msgTypes[15]
+	mi := &file_koinonia_v1_koinonia_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -882,7 +1262,7 @@ func (x *ConflictFile) String() string {
 func (*ConflictFile) ProtoMessage() {}
 
 func (x *ConflictFile) ProtoReflect() protoreflect.Message {
-	mi := &file_koinonia_v1_koinonia_proto_msgTypes[15]
+	mi := &file_koinonia_v1_koinonia_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -895,7 +1275,7 @@ func (x *ConflictFile) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConflictFile.ProtoReflect.Descriptor instead.
 func (*ConflictFile) Descriptor() ([]byte, []int) {
-	return file_koinonia_v1_koinonia_proto_rawDescGZIP(), []int{15}
+	return file_koinonia_v1_koinonia_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *ConflictFile) GetLogicalId() string {
@@ -935,7 +1315,7 @@ type SubscribeRequest struct {
 
 func (x *SubscribeRequest) Reset() {
 	*x = SubscribeRequest{}
-	mi := &file_koinonia_v1_koinonia_proto_msgTypes[16]
+	mi := &file_koinonia_v1_koinonia_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -947,7 +1327,7 @@ func (x *SubscribeRequest) String() string {
 func (*SubscribeRequest) ProtoMessage() {}
 
 func (x *SubscribeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_koinonia_v1_koinonia_proto_msgTypes[16]
+	mi := &file_koinonia_v1_koinonia_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -960,7 +1340,7 @@ func (x *SubscribeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscribeRequest.ProtoReflect.Descriptor instead.
 func (*SubscribeRequest) Descriptor() ([]byte, []int) {
-	return file_koinonia_v1_koinonia_proto_rawDescGZIP(), []int{16}
+	return file_koinonia_v1_koinonia_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *SubscribeRequest) GetSpaceId() string {
@@ -982,7 +1362,7 @@ type Invalidation struct {
 
 func (x *Invalidation) Reset() {
 	*x = Invalidation{}
-	mi := &file_koinonia_v1_koinonia_proto_msgTypes[17]
+	mi := &file_koinonia_v1_koinonia_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -994,7 +1374,7 @@ func (x *Invalidation) String() string {
 func (*Invalidation) ProtoMessage() {}
 
 func (x *Invalidation) ProtoReflect() protoreflect.Message {
-	mi := &file_koinonia_v1_koinonia_proto_msgTypes[17]
+	mi := &file_koinonia_v1_koinonia_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1007,7 +1387,7 @@ func (x *Invalidation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Invalidation.ProtoReflect.Descriptor instead.
 func (*Invalidation) Descriptor() ([]byte, []int) {
-	return file_koinonia_v1_koinonia_proto_rawDescGZIP(), []int{17}
+	return file_koinonia_v1_koinonia_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *Invalidation) GetLogicalId() string {
@@ -1099,7 +1479,35 @@ const file_koinonia_v1_koinonia_proto_rawDesc = "" +
 	"size_bytes\x18\x06 \x01(\x03R\tsizeBytes\"1\n" +
 	"\x0eCommitResponse\x12\x1f\n" +
 	"\vnew_version\x18\x01 \x01(\x05R\n" +
-	"newVersion\"+\n" +
+	"newVersion\"t\n" +
+	"\rDeleteRequest\x12\x1d\n" +
+	"\n" +
+	"logical_id\x18\x01 \x01(\tR\tlogicalId\x12)\n" +
+	"\x10expected_version\x18\x02 \x01(\x05R\x0fexpectedVersion\x12\x19\n" +
+	"\bdraft_id\x18\x03 \x01(\tR\adraftId\"1\n" +
+	"\x0eDeleteResponse\x12\x1f\n" +
+	"\vnew_version\x18\x01 \x01(\x05R\n" +
+	"newVersion\"V\n" +
+	"\x11AsOfLookupRequest\x12\x1b\n" +
+	"\tparent_id\x18\x01 \x01(\tR\bparentId\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x10\n" +
+	"\x03seq\x18\x03 \x01(\x03R\x03seq\"C\n" +
+	"\x12AsOfReadDirRequest\x12\x1b\n" +
+	"\tparent_id\x18\x01 \x01(\tR\bparentId\x12\x10\n" +
+	"\x03seq\x18\x02 \x01(\x03R\x03seq\"3\n" +
+	"\x12NodeHistoryRequest\x12\x1d\n" +
+	"\n" +
+	"logical_id\x18\x01 \x01(\tR\tlogicalId\"J\n" +
+	"\x13NodeHistoryResponse\x123\n" +
+	"\aentries\x18\x01 \x03(\v2\x19.koinonia.v1.HistoryEntryR\aentries\"\x9b\x01\n" +
+	"\fHistoryEntry\x12\x10\n" +
+	"\x03seq\x18\x01 \x01(\x03R\x03seq\x12\x18\n" +
+	"\aversion\x18\x02 \x01(\x05R\aversion\x12!\n" +
+	"\fcontent_hash\x18\x03 \x01(\tR\vcontentHash\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\x04 \x01(\x03R\tcreatedAt\x12\x1d\n" +
+	"\n" +
+	"is_deleted\x18\x05 \x01(\bR\tisDeleted\"+\n" +
 	"\x0ePublishRequest\x12\x19\n" +
 	"\bdraft_id\x18\x01 \x01(\tR\adraftId\"Z\n" +
 	"\x0fPublishResponse\x12\x0e\n" +
@@ -1118,7 +1526,7 @@ const file_koinonia_v1_koinonia_proto_rawDesc = "" +
 	"logical_id\x18\x01 \x01(\tR\tlogicalId\x12\x18\n" +
 	"\aversion\x18\x02 \x01(\x05R\aversion\x12\x19\n" +
 	"\bdraft_id\x18\x03 \x01(\tR\adraftId\x12\x1b\n" +
-	"\tparent_id\x18\x04 \x01(\tR\bparentId2\x93\x05\n" +
+	"\tparent_id\x18\x04 \x01(\tR\bparentId2\xc1\a\n" +
 	"\x0fKoinoniaService\x12A\n" +
 	"\x06Lookup\x12\x1a.koinonia.v1.LookupRequest\x1a\x1b.koinonia.v1.LookupResponse\x12D\n" +
 	"\aReadDir\x12\x1b.koinonia.v1.ReadDirRequest\x1a\x1c.koinonia.v1.ReadDirResponse\x12D\n" +
@@ -1129,8 +1537,13 @@ const file_koinonia_v1_koinonia_proto_rawDesc = "" +
 	"PresignGet\x12\x1b.koinonia.v1.PresignRequest\x1a\x1c.koinonia.v1.PresignResponse\x12G\n" +
 	"\n" +
 	"PresignPut\x12\x1b.koinonia.v1.PresignRequest\x1a\x1c.koinonia.v1.PresignResponse\x12A\n" +
-	"\x06Commit\x12\x1a.koinonia.v1.CommitRequest\x1a\x1b.koinonia.v1.CommitResponse\x12D\n" +
-	"\aPublish\x12\x1b.koinonia.v1.PublishRequest\x1a\x1c.koinonia.v1.PublishResponse\x12G\n" +
+	"\x06Commit\x12\x1a.koinonia.v1.CommitRequest\x1a\x1b.koinonia.v1.CommitResponse\x12A\n" +
+	"\x06Delete\x12\x1a.koinonia.v1.DeleteRequest\x1a\x1b.koinonia.v1.DeleteResponse\x12D\n" +
+	"\aPublish\x12\x1b.koinonia.v1.PublishRequest\x1a\x1c.koinonia.v1.PublishResponse\x12I\n" +
+	"\n" +
+	"AsOfLookup\x12\x1e.koinonia.v1.AsOfLookupRequest\x1a\x1b.koinonia.v1.LookupResponse\x12L\n" +
+	"\vAsOfReadDir\x12\x1f.koinonia.v1.AsOfReadDirRequest\x1a\x1c.koinonia.v1.ReadDirResponse\x12P\n" +
+	"\vNodeHistory\x12\x1f.koinonia.v1.NodeHistoryRequest\x1a .koinonia.v1.NodeHistoryResponse\x12G\n" +
 	"\tSubscribe\x12\x1d.koinonia.v1.SubscribeRequest\x1a\x19.koinonia.v1.Invalidation0\x01B?Z=github.com/FabioSol/koinonia-proto/gen/koinonia/v1;koinoniav1b\x06proto3"
 
 var (
@@ -1145,55 +1558,71 @@ func file_koinonia_v1_koinonia_proto_rawDescGZIP() []byte {
 	return file_koinonia_v1_koinonia_proto_rawDescData
 }
 
-var file_koinonia_v1_koinonia_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
+var file_koinonia_v1_koinonia_proto_msgTypes = make([]protoimpl.MessageInfo, 25)
 var file_koinonia_v1_koinonia_proto_goTypes = []any{
-	(*Node)(nil),               // 0: koinonia.v1.Node
-	(*LookupRequest)(nil),      // 1: koinonia.v1.LookupRequest
-	(*LookupResponse)(nil),     // 2: koinonia.v1.LookupResponse
-	(*ReadDirRequest)(nil),     // 3: koinonia.v1.ReadDirRequest
-	(*ReadDirResponse)(nil),    // 4: koinonia.v1.ReadDirResponse
-	(*GetattrRequest)(nil),     // 5: koinonia.v1.GetattrRequest
-	(*GetattrResponse)(nil),    // 6: koinonia.v1.GetattrResponse
-	(*BlobExistsRequest)(nil),  // 7: koinonia.v1.BlobExistsRequest
-	(*BlobExistsResponse)(nil), // 8: koinonia.v1.BlobExistsResponse
-	(*PresignRequest)(nil),     // 9: koinonia.v1.PresignRequest
-	(*PresignResponse)(nil),    // 10: koinonia.v1.PresignResponse
-	(*CommitRequest)(nil),      // 11: koinonia.v1.CommitRequest
-	(*CommitResponse)(nil),     // 12: koinonia.v1.CommitResponse
-	(*PublishRequest)(nil),     // 13: koinonia.v1.PublishRequest
-	(*PublishResponse)(nil),    // 14: koinonia.v1.PublishResponse
-	(*ConflictFile)(nil),       // 15: koinonia.v1.ConflictFile
-	(*SubscribeRequest)(nil),   // 16: koinonia.v1.SubscribeRequest
-	(*Invalidation)(nil),       // 17: koinonia.v1.Invalidation
+	(*Node)(nil),                // 0: koinonia.v1.Node
+	(*LookupRequest)(nil),       // 1: koinonia.v1.LookupRequest
+	(*LookupResponse)(nil),      // 2: koinonia.v1.LookupResponse
+	(*ReadDirRequest)(nil),      // 3: koinonia.v1.ReadDirRequest
+	(*ReadDirResponse)(nil),     // 4: koinonia.v1.ReadDirResponse
+	(*GetattrRequest)(nil),      // 5: koinonia.v1.GetattrRequest
+	(*GetattrResponse)(nil),     // 6: koinonia.v1.GetattrResponse
+	(*BlobExistsRequest)(nil),   // 7: koinonia.v1.BlobExistsRequest
+	(*BlobExistsResponse)(nil),  // 8: koinonia.v1.BlobExistsResponse
+	(*PresignRequest)(nil),      // 9: koinonia.v1.PresignRequest
+	(*PresignResponse)(nil),     // 10: koinonia.v1.PresignResponse
+	(*CommitRequest)(nil),       // 11: koinonia.v1.CommitRequest
+	(*CommitResponse)(nil),      // 12: koinonia.v1.CommitResponse
+	(*DeleteRequest)(nil),       // 13: koinonia.v1.DeleteRequest
+	(*DeleteResponse)(nil),      // 14: koinonia.v1.DeleteResponse
+	(*AsOfLookupRequest)(nil),   // 15: koinonia.v1.AsOfLookupRequest
+	(*AsOfReadDirRequest)(nil),  // 16: koinonia.v1.AsOfReadDirRequest
+	(*NodeHistoryRequest)(nil),  // 17: koinonia.v1.NodeHistoryRequest
+	(*NodeHistoryResponse)(nil), // 18: koinonia.v1.NodeHistoryResponse
+	(*HistoryEntry)(nil),        // 19: koinonia.v1.HistoryEntry
+	(*PublishRequest)(nil),      // 20: koinonia.v1.PublishRequest
+	(*PublishResponse)(nil),     // 21: koinonia.v1.PublishResponse
+	(*ConflictFile)(nil),        // 22: koinonia.v1.ConflictFile
+	(*SubscribeRequest)(nil),    // 23: koinonia.v1.SubscribeRequest
+	(*Invalidation)(nil),        // 24: koinonia.v1.Invalidation
 }
 var file_koinonia_v1_koinonia_proto_depIdxs = []int32{
 	0,  // 0: koinonia.v1.LookupResponse.node:type_name -> koinonia.v1.Node
 	0,  // 1: koinonia.v1.ReadDirResponse.nodes:type_name -> koinonia.v1.Node
 	0,  // 2: koinonia.v1.GetattrResponse.node:type_name -> koinonia.v1.Node
-	15, // 3: koinonia.v1.PublishResponse.conflicts:type_name -> koinonia.v1.ConflictFile
-	1,  // 4: koinonia.v1.KoinoniaService.Lookup:input_type -> koinonia.v1.LookupRequest
-	3,  // 5: koinonia.v1.KoinoniaService.ReadDir:input_type -> koinonia.v1.ReadDirRequest
-	5,  // 6: koinonia.v1.KoinoniaService.Getattr:input_type -> koinonia.v1.GetattrRequest
-	7,  // 7: koinonia.v1.KoinoniaService.BlobExists:input_type -> koinonia.v1.BlobExistsRequest
-	9,  // 8: koinonia.v1.KoinoniaService.PresignGet:input_type -> koinonia.v1.PresignRequest
-	9,  // 9: koinonia.v1.KoinoniaService.PresignPut:input_type -> koinonia.v1.PresignRequest
-	11, // 10: koinonia.v1.KoinoniaService.Commit:input_type -> koinonia.v1.CommitRequest
-	13, // 11: koinonia.v1.KoinoniaService.Publish:input_type -> koinonia.v1.PublishRequest
-	16, // 12: koinonia.v1.KoinoniaService.Subscribe:input_type -> koinonia.v1.SubscribeRequest
-	2,  // 13: koinonia.v1.KoinoniaService.Lookup:output_type -> koinonia.v1.LookupResponse
-	4,  // 14: koinonia.v1.KoinoniaService.ReadDir:output_type -> koinonia.v1.ReadDirResponse
-	6,  // 15: koinonia.v1.KoinoniaService.Getattr:output_type -> koinonia.v1.GetattrResponse
-	8,  // 16: koinonia.v1.KoinoniaService.BlobExists:output_type -> koinonia.v1.BlobExistsResponse
-	10, // 17: koinonia.v1.KoinoniaService.PresignGet:output_type -> koinonia.v1.PresignResponse
-	10, // 18: koinonia.v1.KoinoniaService.PresignPut:output_type -> koinonia.v1.PresignResponse
-	12, // 19: koinonia.v1.KoinoniaService.Commit:output_type -> koinonia.v1.CommitResponse
-	14, // 20: koinonia.v1.KoinoniaService.Publish:output_type -> koinonia.v1.PublishResponse
-	17, // 21: koinonia.v1.KoinoniaService.Subscribe:output_type -> koinonia.v1.Invalidation
-	13, // [13:22] is the sub-list for method output_type
-	4,  // [4:13] is the sub-list for method input_type
-	4,  // [4:4] is the sub-list for extension type_name
-	4,  // [4:4] is the sub-list for extension extendee
-	0,  // [0:4] is the sub-list for field type_name
+	19, // 3: koinonia.v1.NodeHistoryResponse.entries:type_name -> koinonia.v1.HistoryEntry
+	22, // 4: koinonia.v1.PublishResponse.conflicts:type_name -> koinonia.v1.ConflictFile
+	1,  // 5: koinonia.v1.KoinoniaService.Lookup:input_type -> koinonia.v1.LookupRequest
+	3,  // 6: koinonia.v1.KoinoniaService.ReadDir:input_type -> koinonia.v1.ReadDirRequest
+	5,  // 7: koinonia.v1.KoinoniaService.Getattr:input_type -> koinonia.v1.GetattrRequest
+	7,  // 8: koinonia.v1.KoinoniaService.BlobExists:input_type -> koinonia.v1.BlobExistsRequest
+	9,  // 9: koinonia.v1.KoinoniaService.PresignGet:input_type -> koinonia.v1.PresignRequest
+	9,  // 10: koinonia.v1.KoinoniaService.PresignPut:input_type -> koinonia.v1.PresignRequest
+	11, // 11: koinonia.v1.KoinoniaService.Commit:input_type -> koinonia.v1.CommitRequest
+	13, // 12: koinonia.v1.KoinoniaService.Delete:input_type -> koinonia.v1.DeleteRequest
+	20, // 13: koinonia.v1.KoinoniaService.Publish:input_type -> koinonia.v1.PublishRequest
+	15, // 14: koinonia.v1.KoinoniaService.AsOfLookup:input_type -> koinonia.v1.AsOfLookupRequest
+	16, // 15: koinonia.v1.KoinoniaService.AsOfReadDir:input_type -> koinonia.v1.AsOfReadDirRequest
+	17, // 16: koinonia.v1.KoinoniaService.NodeHistory:input_type -> koinonia.v1.NodeHistoryRequest
+	23, // 17: koinonia.v1.KoinoniaService.Subscribe:input_type -> koinonia.v1.SubscribeRequest
+	2,  // 18: koinonia.v1.KoinoniaService.Lookup:output_type -> koinonia.v1.LookupResponse
+	4,  // 19: koinonia.v1.KoinoniaService.ReadDir:output_type -> koinonia.v1.ReadDirResponse
+	6,  // 20: koinonia.v1.KoinoniaService.Getattr:output_type -> koinonia.v1.GetattrResponse
+	8,  // 21: koinonia.v1.KoinoniaService.BlobExists:output_type -> koinonia.v1.BlobExistsResponse
+	10, // 22: koinonia.v1.KoinoniaService.PresignGet:output_type -> koinonia.v1.PresignResponse
+	10, // 23: koinonia.v1.KoinoniaService.PresignPut:output_type -> koinonia.v1.PresignResponse
+	12, // 24: koinonia.v1.KoinoniaService.Commit:output_type -> koinonia.v1.CommitResponse
+	14, // 25: koinonia.v1.KoinoniaService.Delete:output_type -> koinonia.v1.DeleteResponse
+	21, // 26: koinonia.v1.KoinoniaService.Publish:output_type -> koinonia.v1.PublishResponse
+	2,  // 27: koinonia.v1.KoinoniaService.AsOfLookup:output_type -> koinonia.v1.LookupResponse
+	4,  // 28: koinonia.v1.KoinoniaService.AsOfReadDir:output_type -> koinonia.v1.ReadDirResponse
+	18, // 29: koinonia.v1.KoinoniaService.NodeHistory:output_type -> koinonia.v1.NodeHistoryResponse
+	24, // 30: koinonia.v1.KoinoniaService.Subscribe:output_type -> koinonia.v1.Invalidation
+	18, // [18:31] is the sub-list for method output_type
+	5,  // [5:18] is the sub-list for method input_type
+	5,  // [5:5] is the sub-list for extension type_name
+	5,  // [5:5] is the sub-list for extension extendee
+	0,  // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_koinonia_v1_koinonia_proto_init() }
@@ -1207,7 +1636,7 @@ func file_koinonia_v1_koinonia_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_koinonia_v1_koinonia_proto_rawDesc), len(file_koinonia_v1_koinonia_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   18,
+			NumMessages:   25,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -28,7 +28,13 @@ service KoinoniaService {
 
   // Writes (OCC/CAS) and atomic draft publish.
   rpc Commit(CommitRequest) returns (CommitResponse);
+  rpc Delete(DeleteRequest) returns (DeleteResponse);
   rpc Publish(PublishRequest) returns (PublishResponse);
+
+  // Time travel: resolve state as-of a global commit seq, and list a node's history.
+  rpc AsOfLookup(AsOfLookupRequest) returns (LookupResponse);
+  rpc AsOfReadDir(AsOfReadDirRequest) returns (ReadDirResponse);
+  rpc NodeHistory(NodeHistoryRequest) returns (NodeHistoryResponse);
 
   // Real-time cache invalidation (thin deltas, no content).
   rpc Subscribe(SubscribeRequest) returns (stream Invalidation);
@@ -100,6 +106,38 @@ message CommitRequest {
 }
 message CommitResponse {
   int32 new_version = 1;
+}
+
+message DeleteRequest {
+  string logical_id = 1;
+  int32 expected_version = 2;
+  string draft_id = 3; // "" = tombstone main; else draft whiteout
+}
+message DeleteResponse {
+  int32 new_version = 1;
+}
+
+message AsOfLookupRequest {
+  string parent_id = 1;
+  string name = 2;
+  int64 seq = 3; // global commit seq; resolves the state as-of this point
+}
+message AsOfReadDirRequest {
+  string parent_id = 1;
+  int64 seq = 2;
+}
+message NodeHistoryRequest {
+  string logical_id = 1;
+}
+message NodeHistoryResponse {
+  repeated HistoryEntry entries = 1;
+}
+message HistoryEntry {
+  int64 seq = 1;
+  int32 version = 2;
+  string content_hash = 3;
+  int64 created_at = 4; // unix seconds
+  bool is_deleted = 5;
 }
 
 message PublishRequest {
