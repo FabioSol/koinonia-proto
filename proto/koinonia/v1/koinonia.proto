@@ -36,6 +36,10 @@ service KoinoniaService {
   rpc AsOfReadDir(AsOfReadDirRequest) returns (ReadDirResponse);
   rpc NodeHistory(NodeHistoryRequest) returns (NodeHistoryResponse);
 
+  // Named checkpoints (tags) pinning a global commit seq.
+  rpc CreateCheckpoint(CreateCheckpointRequest) returns (CreateCheckpointResponse);
+  rpc ListCheckpoints(ListCheckpointsRequest) returns (ListCheckpointsResponse);
+
   // Real-time cache invalidation (thin deltas, no content).
   rpc Subscribe(SubscribeRequest) returns (stream Invalidation);
 }
@@ -138,6 +142,27 @@ message HistoryEntry {
   string content_hash = 3;
   int64 created_at = 4; // unix seconds
   bool is_deleted = 5;
+}
+
+message CreateCheckpointRequest {
+  string space_id = 1;
+  string branch = 2; // "" defaults to main
+  string name = 3;
+}
+message CreateCheckpointResponse {
+  int64 as_of_seq = 1;
+}
+message ListCheckpointsRequest {
+  string space_id = 1;
+  string branch = 2;
+}
+message ListCheckpointsResponse {
+  repeated Checkpoint checkpoints = 1;
+}
+message Checkpoint {
+  string name = 1;
+  int64 as_of_seq = 2;
+  int64 created_at = 3; // unix seconds
 }
 
 message PublishRequest {

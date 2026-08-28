@@ -19,19 +19,21 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	KoinoniaService_Lookup_FullMethodName      = "/koinonia.v1.KoinoniaService/Lookup"
-	KoinoniaService_ReadDir_FullMethodName     = "/koinonia.v1.KoinoniaService/ReadDir"
-	KoinoniaService_Getattr_FullMethodName     = "/koinonia.v1.KoinoniaService/Getattr"
-	KoinoniaService_BlobExists_FullMethodName  = "/koinonia.v1.KoinoniaService/BlobExists"
-	KoinoniaService_PresignGet_FullMethodName  = "/koinonia.v1.KoinoniaService/PresignGet"
-	KoinoniaService_PresignPut_FullMethodName  = "/koinonia.v1.KoinoniaService/PresignPut"
-	KoinoniaService_Commit_FullMethodName      = "/koinonia.v1.KoinoniaService/Commit"
-	KoinoniaService_Delete_FullMethodName      = "/koinonia.v1.KoinoniaService/Delete"
-	KoinoniaService_Publish_FullMethodName     = "/koinonia.v1.KoinoniaService/Publish"
-	KoinoniaService_AsOfLookup_FullMethodName  = "/koinonia.v1.KoinoniaService/AsOfLookup"
-	KoinoniaService_AsOfReadDir_FullMethodName = "/koinonia.v1.KoinoniaService/AsOfReadDir"
-	KoinoniaService_NodeHistory_FullMethodName = "/koinonia.v1.KoinoniaService/NodeHistory"
-	KoinoniaService_Subscribe_FullMethodName   = "/koinonia.v1.KoinoniaService/Subscribe"
+	KoinoniaService_Lookup_FullMethodName           = "/koinonia.v1.KoinoniaService/Lookup"
+	KoinoniaService_ReadDir_FullMethodName          = "/koinonia.v1.KoinoniaService/ReadDir"
+	KoinoniaService_Getattr_FullMethodName          = "/koinonia.v1.KoinoniaService/Getattr"
+	KoinoniaService_BlobExists_FullMethodName       = "/koinonia.v1.KoinoniaService/BlobExists"
+	KoinoniaService_PresignGet_FullMethodName       = "/koinonia.v1.KoinoniaService/PresignGet"
+	KoinoniaService_PresignPut_FullMethodName       = "/koinonia.v1.KoinoniaService/PresignPut"
+	KoinoniaService_Commit_FullMethodName           = "/koinonia.v1.KoinoniaService/Commit"
+	KoinoniaService_Delete_FullMethodName           = "/koinonia.v1.KoinoniaService/Delete"
+	KoinoniaService_Publish_FullMethodName          = "/koinonia.v1.KoinoniaService/Publish"
+	KoinoniaService_AsOfLookup_FullMethodName       = "/koinonia.v1.KoinoniaService/AsOfLookup"
+	KoinoniaService_AsOfReadDir_FullMethodName      = "/koinonia.v1.KoinoniaService/AsOfReadDir"
+	KoinoniaService_NodeHistory_FullMethodName      = "/koinonia.v1.KoinoniaService/NodeHistory"
+	KoinoniaService_CreateCheckpoint_FullMethodName = "/koinonia.v1.KoinoniaService/CreateCheckpoint"
+	KoinoniaService_ListCheckpoints_FullMethodName  = "/koinonia.v1.KoinoniaService/ListCheckpoints"
+	KoinoniaService_Subscribe_FullMethodName        = "/koinonia.v1.KoinoniaService/Subscribe"
 )
 
 // KoinoniaServiceClient is the client API for KoinoniaService service.
@@ -68,6 +70,9 @@ type KoinoniaServiceClient interface {
 	AsOfLookup(ctx context.Context, in *AsOfLookupRequest, opts ...grpc.CallOption) (*LookupResponse, error)
 	AsOfReadDir(ctx context.Context, in *AsOfReadDirRequest, opts ...grpc.CallOption) (*ReadDirResponse, error)
 	NodeHistory(ctx context.Context, in *NodeHistoryRequest, opts ...grpc.CallOption) (*NodeHistoryResponse, error)
+	// Named checkpoints (tags) pinning a global commit seq.
+	CreateCheckpoint(ctx context.Context, in *CreateCheckpointRequest, opts ...grpc.CallOption) (*CreateCheckpointResponse, error)
+	ListCheckpoints(ctx context.Context, in *ListCheckpointsRequest, opts ...grpc.CallOption) (*ListCheckpointsResponse, error)
 	// Real-time cache invalidation (thin deltas, no content).
 	Subscribe(ctx context.Context, in *SubscribeRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Invalidation], error)
 }
@@ -200,6 +205,26 @@ func (c *koinoniaServiceClient) NodeHistory(ctx context.Context, in *NodeHistory
 	return out, nil
 }
 
+func (c *koinoniaServiceClient) CreateCheckpoint(ctx context.Context, in *CreateCheckpointRequest, opts ...grpc.CallOption) (*CreateCheckpointResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateCheckpointResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_CreateCheckpoint_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) ListCheckpoints(ctx context.Context, in *ListCheckpointsRequest, opts ...grpc.CallOption) (*ListCheckpointsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListCheckpointsResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_ListCheckpoints_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *koinoniaServiceClient) Subscribe(ctx context.Context, in *SubscribeRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Invalidation], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &KoinoniaService_ServiceDesc.Streams[0], KoinoniaService_Subscribe_FullMethodName, cOpts...)
@@ -253,6 +278,9 @@ type KoinoniaServiceServer interface {
 	AsOfLookup(context.Context, *AsOfLookupRequest) (*LookupResponse, error)
 	AsOfReadDir(context.Context, *AsOfReadDirRequest) (*ReadDirResponse, error)
 	NodeHistory(context.Context, *NodeHistoryRequest) (*NodeHistoryResponse, error)
+	// Named checkpoints (tags) pinning a global commit seq.
+	CreateCheckpoint(context.Context, *CreateCheckpointRequest) (*CreateCheckpointResponse, error)
+	ListCheckpoints(context.Context, *ListCheckpointsRequest) (*ListCheckpointsResponse, error)
 	// Real-time cache invalidation (thin deltas, no content).
 	Subscribe(*SubscribeRequest, grpc.ServerStreamingServer[Invalidation]) error
 	mustEmbedUnimplementedKoinoniaServiceServer()
@@ -300,6 +328,12 @@ func (UnimplementedKoinoniaServiceServer) AsOfReadDir(context.Context, *AsOfRead
 }
 func (UnimplementedKoinoniaServiceServer) NodeHistory(context.Context, *NodeHistoryRequest) (*NodeHistoryResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method NodeHistory not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) CreateCheckpoint(context.Context, *CreateCheckpointRequest) (*CreateCheckpointResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateCheckpoint not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) ListCheckpoints(context.Context, *ListCheckpointsRequest) (*ListCheckpointsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListCheckpoints not implemented")
 }
 func (UnimplementedKoinoniaServiceServer) Subscribe(*SubscribeRequest, grpc.ServerStreamingServer[Invalidation]) error {
 	return status.Error(codes.Unimplemented, "method Subscribe not implemented")
@@ -541,6 +575,42 @@ func _KoinoniaService_NodeHistory_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _KoinoniaService_CreateCheckpoint_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateCheckpointRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).CreateCheckpoint(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_CreateCheckpoint_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).CreateCheckpoint(ctx, req.(*CreateCheckpointRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_ListCheckpoints_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListCheckpointsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).ListCheckpoints(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_ListCheckpoints_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).ListCheckpoints(ctx, req.(*ListCheckpointsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _KoinoniaService_Subscribe_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(SubscribeRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -606,6 +676,14 @@ var KoinoniaService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "NodeHistory",
 			Handler:    _KoinoniaService_NodeHistory_Handler,
+		},
+		{
+			MethodName: "CreateCheckpoint",
+			Handler:    _KoinoniaService_CreateCheckpoint_Handler,
+		},
+		{
+			MethodName: "ListCheckpoints",
+			Handler:    _KoinoniaService_ListCheckpoints_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
