@@ -35,6 +35,9 @@ const (
 	KoinoniaService_ListCheckpoints_FullMethodName  = "/koinonia.v1.KoinoniaService/ListCheckpoints"
 	KoinoniaService_Login_FullMethodName            = "/koinonia.v1.KoinoniaService/Login"
 	KoinoniaService_IssueAgentToken_FullMethodName  = "/koinonia.v1.KoinoniaService/IssueAgentToken"
+	KoinoniaService_ResolveDisplay_FullMethodName   = "/koinonia.v1.KoinoniaService/ResolveDisplay"
+	KoinoniaService_SetNodeAuthors_FullMethodName   = "/koinonia.v1.KoinoniaService/SetNodeAuthors"
+	KoinoniaService_GetNodeAuthors_FullMethodName   = "/koinonia.v1.KoinoniaService/GetNodeAuthors"
 	KoinoniaService_Subscribe_FullMethodName        = "/koinonia.v1.KoinoniaService/Subscribe"
 )
 
@@ -78,6 +81,11 @@ type KoinoniaServiceClient interface {
 	// Identity: obtain a JWT (dev issuer) and delegate an agent sub-token.
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*TokenResponse, error)
 	IssueAgentToken(ctx context.Context, in *IssueAgentTokenRequest, opts ...grpc.CallOption) (*TokenResponse, error)
+	// Section display config (space default merged with the section's frontmatter)
+	// and node authorship (byline attribution).
+	ResolveDisplay(ctx context.Context, in *ResolveDisplayRequest, opts ...grpc.CallOption) (*ResolveDisplayResponse, error)
+	SetNodeAuthors(ctx context.Context, in *SetNodeAuthorsRequest, opts ...grpc.CallOption) (*SetNodeAuthorsResponse, error)
+	GetNodeAuthors(ctx context.Context, in *GetNodeAuthorsRequest, opts ...grpc.CallOption) (*GetNodeAuthorsResponse, error)
 	// Real-time cache invalidation (thin deltas, no content).
 	Subscribe(ctx context.Context, in *SubscribeRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Invalidation], error)
 }
@@ -250,6 +258,36 @@ func (c *koinoniaServiceClient) IssueAgentToken(ctx context.Context, in *IssueAg
 	return out, nil
 }
 
+func (c *koinoniaServiceClient) ResolveDisplay(ctx context.Context, in *ResolveDisplayRequest, opts ...grpc.CallOption) (*ResolveDisplayResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ResolveDisplayResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_ResolveDisplay_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) SetNodeAuthors(ctx context.Context, in *SetNodeAuthorsRequest, opts ...grpc.CallOption) (*SetNodeAuthorsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SetNodeAuthorsResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_SetNodeAuthors_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) GetNodeAuthors(ctx context.Context, in *GetNodeAuthorsRequest, opts ...grpc.CallOption) (*GetNodeAuthorsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetNodeAuthorsResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_GetNodeAuthors_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *koinoniaServiceClient) Subscribe(ctx context.Context, in *SubscribeRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Invalidation], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &KoinoniaService_ServiceDesc.Streams[0], KoinoniaService_Subscribe_FullMethodName, cOpts...)
@@ -309,6 +347,11 @@ type KoinoniaServiceServer interface {
 	// Identity: obtain a JWT (dev issuer) and delegate an agent sub-token.
 	Login(context.Context, *LoginRequest) (*TokenResponse, error)
 	IssueAgentToken(context.Context, *IssueAgentTokenRequest) (*TokenResponse, error)
+	// Section display config (space default merged with the section's frontmatter)
+	// and node authorship (byline attribution).
+	ResolveDisplay(context.Context, *ResolveDisplayRequest) (*ResolveDisplayResponse, error)
+	SetNodeAuthors(context.Context, *SetNodeAuthorsRequest) (*SetNodeAuthorsResponse, error)
+	GetNodeAuthors(context.Context, *GetNodeAuthorsRequest) (*GetNodeAuthorsResponse, error)
 	// Real-time cache invalidation (thin deltas, no content).
 	Subscribe(*SubscribeRequest, grpc.ServerStreamingServer[Invalidation]) error
 	mustEmbedUnimplementedKoinoniaServiceServer()
@@ -368,6 +411,15 @@ func (UnimplementedKoinoniaServiceServer) Login(context.Context, *LoginRequest) 
 }
 func (UnimplementedKoinoniaServiceServer) IssueAgentToken(context.Context, *IssueAgentTokenRequest) (*TokenResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method IssueAgentToken not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) ResolveDisplay(context.Context, *ResolveDisplayRequest) (*ResolveDisplayResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ResolveDisplay not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) SetNodeAuthors(context.Context, *SetNodeAuthorsRequest) (*SetNodeAuthorsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SetNodeAuthors not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) GetNodeAuthors(context.Context, *GetNodeAuthorsRequest) (*GetNodeAuthorsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetNodeAuthors not implemented")
 }
 func (UnimplementedKoinoniaServiceServer) Subscribe(*SubscribeRequest, grpc.ServerStreamingServer[Invalidation]) error {
 	return status.Error(codes.Unimplemented, "method Subscribe not implemented")
@@ -681,6 +733,60 @@ func _KoinoniaService_IssueAgentToken_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _KoinoniaService_ResolveDisplay_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResolveDisplayRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).ResolveDisplay(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_ResolveDisplay_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).ResolveDisplay(ctx, req.(*ResolveDisplayRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_SetNodeAuthors_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetNodeAuthorsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).SetNodeAuthors(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_SetNodeAuthors_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).SetNodeAuthors(ctx, req.(*SetNodeAuthorsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_GetNodeAuthors_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetNodeAuthorsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).GetNodeAuthors(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_GetNodeAuthors_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).GetNodeAuthors(ctx, req.(*GetNodeAuthorsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _KoinoniaService_Subscribe_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(SubscribeRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -762,6 +868,18 @@ var KoinoniaService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "IssueAgentToken",
 			Handler:    _KoinoniaService_IssueAgentToken_Handler,
+		},
+		{
+			MethodName: "ResolveDisplay",
+			Handler:    _KoinoniaService_ResolveDisplay_Handler,
+		},
+		{
+			MethodName: "SetNodeAuthors",
+			Handler:    _KoinoniaService_SetNodeAuthors_Handler,
+		},
+		{
+			MethodName: "GetNodeAuthors",
+			Handler:    _KoinoniaService_GetNodeAuthors_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

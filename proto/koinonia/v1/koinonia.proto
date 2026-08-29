@@ -44,6 +44,12 @@ service KoinoniaService {
   rpc Login(LoginRequest) returns (TokenResponse);
   rpc IssueAgentToken(IssueAgentTokenRequest) returns (TokenResponse);
 
+  // Section display config (space default merged with the section's frontmatter)
+  // and node authorship (byline attribution).
+  rpc ResolveDisplay(ResolveDisplayRequest) returns (ResolveDisplayResponse);
+  rpc SetNodeAuthors(SetNodeAuthorsRequest) returns (SetNodeAuthorsResponse);
+  rpc GetNodeAuthors(GetNodeAuthorsRequest) returns (GetNodeAuthorsResponse);
+
   // Real-time cache invalidation (thin deltas, no content).
   rpc Subscribe(SubscribeRequest) returns (stream Invalidation);
 }
@@ -178,6 +184,25 @@ message TokenResponse {
 }
 message IssueAgentTokenRequest {
   string agent = 1; // agent name; the delegating user is the authenticated caller
+}
+
+message ResolveDisplayRequest {
+  string logical_id = 1;
+  string draft_id = 2;
+}
+message ResolveDisplayResponse {
+  bytes config_json = 1; // space default merged with the section's display block
+}
+message SetNodeAuthorsRequest {
+  string logical_id = 1;
+  repeated string principals = 2; // principal handles (users or groups)
+}
+message SetNodeAuthorsResponse {}
+message GetNodeAuthorsRequest {
+  string logical_id = 1;
+}
+message GetNodeAuthorsResponse {
+  repeated string principals = 1; // handles
 }
 
 message PublishRequest {
