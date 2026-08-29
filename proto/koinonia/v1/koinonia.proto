@@ -40,6 +40,10 @@ service KoinoniaService {
   rpc CreateCheckpoint(CreateCheckpointRequest) returns (CreateCheckpointResponse);
   rpc ListCheckpoints(ListCheckpointsRequest) returns (ListCheckpointsResponse);
 
+  // Identity: obtain a JWT (dev issuer) and delegate an agent sub-token.
+  rpc Login(LoginRequest) returns (TokenResponse);
+  rpc IssueAgentToken(IssueAgentTokenRequest) returns (TokenResponse);
+
   // Real-time cache invalidation (thin deltas, no content).
   rpc Subscribe(SubscribeRequest) returns (stream Invalidation);
 }
@@ -163,6 +167,17 @@ message Checkpoint {
   string name = 1;
   int64 as_of_seq = 2;
   int64 created_at = 3; // unix seconds
+}
+
+message LoginRequest {
+  string subject = 1; // dev issuer: the principal handle to log in as
+}
+message TokenResponse {
+  string token = 1;
+  int64 expires_at = 2; // unix seconds
+}
+message IssueAgentTokenRequest {
+  string agent = 1; // agent name; the delegating user is the authenticated caller
 }
 
 message PublishRequest {

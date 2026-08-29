@@ -33,6 +33,8 @@ const (
 	KoinoniaService_NodeHistory_FullMethodName      = "/koinonia.v1.KoinoniaService/NodeHistory"
 	KoinoniaService_CreateCheckpoint_FullMethodName = "/koinonia.v1.KoinoniaService/CreateCheckpoint"
 	KoinoniaService_ListCheckpoints_FullMethodName  = "/koinonia.v1.KoinoniaService/ListCheckpoints"
+	KoinoniaService_Login_FullMethodName            = "/koinonia.v1.KoinoniaService/Login"
+	KoinoniaService_IssueAgentToken_FullMethodName  = "/koinonia.v1.KoinoniaService/IssueAgentToken"
 	KoinoniaService_Subscribe_FullMethodName        = "/koinonia.v1.KoinoniaService/Subscribe"
 )
 
@@ -73,6 +75,9 @@ type KoinoniaServiceClient interface {
 	// Named checkpoints (tags) pinning a global commit seq.
 	CreateCheckpoint(ctx context.Context, in *CreateCheckpointRequest, opts ...grpc.CallOption) (*CreateCheckpointResponse, error)
 	ListCheckpoints(ctx context.Context, in *ListCheckpointsRequest, opts ...grpc.CallOption) (*ListCheckpointsResponse, error)
+	// Identity: obtain a JWT (dev issuer) and delegate an agent sub-token.
+	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*TokenResponse, error)
+	IssueAgentToken(ctx context.Context, in *IssueAgentTokenRequest, opts ...grpc.CallOption) (*TokenResponse, error)
 	// Real-time cache invalidation (thin deltas, no content).
 	Subscribe(ctx context.Context, in *SubscribeRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Invalidation], error)
 }
@@ -225,6 +230,26 @@ func (c *koinoniaServiceClient) ListCheckpoints(ctx context.Context, in *ListChe
 	return out, nil
 }
 
+func (c *koinoniaServiceClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*TokenResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TokenResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_Login_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) IssueAgentToken(ctx context.Context, in *IssueAgentTokenRequest, opts ...grpc.CallOption) (*TokenResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TokenResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_IssueAgentToken_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *koinoniaServiceClient) Subscribe(ctx context.Context, in *SubscribeRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Invalidation], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &KoinoniaService_ServiceDesc.Streams[0], KoinoniaService_Subscribe_FullMethodName, cOpts...)
@@ -281,6 +306,9 @@ type KoinoniaServiceServer interface {
 	// Named checkpoints (tags) pinning a global commit seq.
 	CreateCheckpoint(context.Context, *CreateCheckpointRequest) (*CreateCheckpointResponse, error)
 	ListCheckpoints(context.Context, *ListCheckpointsRequest) (*ListCheckpointsResponse, error)
+	// Identity: obtain a JWT (dev issuer) and delegate an agent sub-token.
+	Login(context.Context, *LoginRequest) (*TokenResponse, error)
+	IssueAgentToken(context.Context, *IssueAgentTokenRequest) (*TokenResponse, error)
 	// Real-time cache invalidation (thin deltas, no content).
 	Subscribe(*SubscribeRequest, grpc.ServerStreamingServer[Invalidation]) error
 	mustEmbedUnimplementedKoinoniaServiceServer()
@@ -334,6 +362,12 @@ func (UnimplementedKoinoniaServiceServer) CreateCheckpoint(context.Context, *Cre
 }
 func (UnimplementedKoinoniaServiceServer) ListCheckpoints(context.Context, *ListCheckpointsRequest) (*ListCheckpointsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListCheckpoints not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) Login(context.Context, *LoginRequest) (*TokenResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method Login not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) IssueAgentToken(context.Context, *IssueAgentTokenRequest) (*TokenResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method IssueAgentToken not implemented")
 }
 func (UnimplementedKoinoniaServiceServer) Subscribe(*SubscribeRequest, grpc.ServerStreamingServer[Invalidation]) error {
 	return status.Error(codes.Unimplemented, "method Subscribe not implemented")
@@ -611,6 +645,42 @@ func _KoinoniaService_ListCheckpoints_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _KoinoniaService_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LoginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).Login(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_Login_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).Login(ctx, req.(*LoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_IssueAgentToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IssueAgentTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).IssueAgentToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_IssueAgentToken_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).IssueAgentToken(ctx, req.(*IssueAgentTokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _KoinoniaService_Subscribe_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(SubscribeRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -684,6 +754,14 @@ var KoinoniaService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListCheckpoints",
 			Handler:    _KoinoniaService_ListCheckpoints_Handler,
+		},
+		{
+			MethodName: "Login",
+			Handler:    _KoinoniaService_Login_Handler,
+		},
+		{
+			MethodName: "IssueAgentToken",
+			Handler:    _KoinoniaService_IssueAgentToken_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

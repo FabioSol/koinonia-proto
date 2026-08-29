@@ -37,6 +37,11 @@ psql_c < "$MIG_DIR/000004_checkpoints.up.sql"
 psql_c -tAc "SELECT 1 FROM information_schema.tables WHERE table_name='checkpoints'" | grep -q 1 \
   && echo "  ✓ checkpoints" || { echo "  ✗ checkpoints missing"; exit 1; }
 
+echo "apply 000005_identity.up.sql…"
+psql_c < "$MIG_DIR/000005_identity.up.sql"
+psql_c -tAc "SELECT 1 FROM information_schema.tables WHERE table_name='space_grants'" | grep -q 1 \
+  && echo "  ✓ identity" || { echo "  ✗ identity missing"; exit 1; }
+
 echo "assert duplicate MAIN siblings rejected (NULLS NOT DISTINCT)…"
 psql_c -c "INSERT INTO spaces (id, slug) VALUES ('00000000-0000-0000-0000-0000000000aa','t');" >/dev/null
 psql_c -c "INSERT INTO nodes (logical_id, space_id, name, kind) VALUES (gen_random_uuid(),'00000000-0000-0000-0000-0000000000aa','dup','article');" >/dev/null
@@ -53,6 +58,7 @@ COUNT=$(psql_c -tAc "SELECT count(*) FROM nodes WHERE space_id='00000000-0000-00
 
 echo "apply down migrations (round-trip)…"
 psql_c < "$MIG_DIR/000002_dev_seed.down.sql"
+psql_c < "$MIG_DIR/000005_identity.down.sql"
 psql_c < "$MIG_DIR/000004_checkpoints.down.sql"
 psql_c < "$MIG_DIR/000003_node_history.down.sql"
 psql_c < "$MIG_DIR/000001_init.down.sql"
