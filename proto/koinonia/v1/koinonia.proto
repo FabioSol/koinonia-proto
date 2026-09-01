@@ -44,6 +44,10 @@ service KoinoniaService {
   rpc Login(LoginRequest) returns (TokenResponse);
   rpc IssueAgentToken(IssueAgentTokenRequest) returns (TokenResponse);
 
+  // Space provisioning (ADR-0029): bootstrap a space, its root node, and the
+  // caller's owner grant in one transaction. The only path that creates a space.
+  rpc CreateSpace(CreateSpaceRequest) returns (CreateSpaceResponse);
+
   // Section display config (space default merged with the section's frontmatter)
   // and node authorship (byline attribution).
   rpc ResolveDisplay(ResolveDisplayRequest) returns (ResolveDisplayResponse);
@@ -194,6 +198,15 @@ message Checkpoint {
   string name = 1;
   int64 as_of_seq = 2;
   int64 created_at = 3; // unix seconds
+}
+
+message CreateSpaceRequest {
+  string slug = 1;          // unique space slug
+  bytes settings_json = 2;  // optional space settings (JSON object); empty -> {}
+}
+message CreateSpaceResponse {
+  string space_id = 1;
+  string root_logical_id = 2; // the root 'space' node
 }
 
 message LoginRequest {

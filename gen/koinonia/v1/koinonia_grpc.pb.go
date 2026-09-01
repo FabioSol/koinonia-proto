@@ -35,6 +35,7 @@ const (
 	KoinoniaService_ListCheckpoints_FullMethodName  = "/koinonia.v1.KoinoniaService/ListCheckpoints"
 	KoinoniaService_Login_FullMethodName            = "/koinonia.v1.KoinoniaService/Login"
 	KoinoniaService_IssueAgentToken_FullMethodName  = "/koinonia.v1.KoinoniaService/IssueAgentToken"
+	KoinoniaService_CreateSpace_FullMethodName      = "/koinonia.v1.KoinoniaService/CreateSpace"
 	KoinoniaService_ResolveDisplay_FullMethodName   = "/koinonia.v1.KoinoniaService/ResolveDisplay"
 	KoinoniaService_SetNodeAuthors_FullMethodName   = "/koinonia.v1.KoinoniaService/SetNodeAuthors"
 	KoinoniaService_GetNodeAuthors_FullMethodName   = "/koinonia.v1.KoinoniaService/GetNodeAuthors"
@@ -91,6 +92,9 @@ type KoinoniaServiceClient interface {
 	// Identity: obtain a JWT (dev issuer) and delegate an agent sub-token.
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*TokenResponse, error)
 	IssueAgentToken(ctx context.Context, in *IssueAgentTokenRequest, opts ...grpc.CallOption) (*TokenResponse, error)
+	// Space provisioning (ADR-0029): bootstrap a space, its root node, and the
+	// caller's owner grant in one transaction. The only path that creates a space.
+	CreateSpace(ctx context.Context, in *CreateSpaceRequest, opts ...grpc.CallOption) (*CreateSpaceResponse, error)
 	// Section display config (space default merged with the section's frontmatter)
 	// and node authorship (byline attribution).
 	ResolveDisplay(ctx context.Context, in *ResolveDisplayRequest, opts ...grpc.CallOption) (*ResolveDisplayResponse, error)
@@ -279,6 +283,16 @@ func (c *koinoniaServiceClient) IssueAgentToken(ctx context.Context, in *IssueAg
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(TokenResponse)
 	err := c.cc.Invoke(ctx, KoinoniaService_IssueAgentToken_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) CreateSpace(ctx context.Context, in *CreateSpaceRequest, opts ...grpc.CallOption) (*CreateSpaceResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateSpaceResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_CreateSpace_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -474,6 +488,9 @@ type KoinoniaServiceServer interface {
 	// Identity: obtain a JWT (dev issuer) and delegate an agent sub-token.
 	Login(context.Context, *LoginRequest) (*TokenResponse, error)
 	IssueAgentToken(context.Context, *IssueAgentTokenRequest) (*TokenResponse, error)
+	// Space provisioning (ADR-0029): bootstrap a space, its root node, and the
+	// caller's owner grant in one transaction. The only path that creates a space.
+	CreateSpace(context.Context, *CreateSpaceRequest) (*CreateSpaceResponse, error)
 	// Section display config (space default merged with the section's frontmatter)
 	// and node authorship (byline attribution).
 	ResolveDisplay(context.Context, *ResolveDisplayRequest) (*ResolveDisplayResponse, error)
@@ -555,6 +572,9 @@ func (UnimplementedKoinoniaServiceServer) Login(context.Context, *LoginRequest) 
 }
 func (UnimplementedKoinoniaServiceServer) IssueAgentToken(context.Context, *IssueAgentTokenRequest) (*TokenResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method IssueAgentToken not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) CreateSpace(context.Context, *CreateSpaceRequest) (*CreateSpaceResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateSpace not implemented")
 }
 func (UnimplementedKoinoniaServiceServer) ResolveDisplay(context.Context, *ResolveDisplayRequest) (*ResolveDisplayResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ResolveDisplay not implemented")
@@ -907,6 +927,24 @@ func _KoinoniaService_IssueAgentToken_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _KoinoniaService_CreateSpace_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateSpaceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).CreateSpace(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_CreateSpace_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).CreateSpace(ctx, req.(*CreateSpaceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _KoinoniaService_ResolveDisplay_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ResolveDisplayRequest)
 	if err := dec(in); err != nil {
@@ -1222,6 +1260,10 @@ var KoinoniaService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "IssueAgentToken",
 			Handler:    _KoinoniaService_IssueAgentToken_Handler,
+		},
+		{
+			MethodName: "CreateSpace",
+			Handler:    _KoinoniaService_CreateSpace_Handler,
 		},
 		{
 			MethodName: "ResolveDisplay",
