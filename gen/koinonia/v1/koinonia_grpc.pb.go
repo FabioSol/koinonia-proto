@@ -38,6 +38,11 @@ const (
 	KoinoniaService_ResolveDisplay_FullMethodName   = "/koinonia.v1.KoinoniaService/ResolveDisplay"
 	KoinoniaService_SetNodeAuthors_FullMethodName   = "/koinonia.v1.KoinoniaService/SetNodeAuthors"
 	KoinoniaService_GetNodeAuthors_FullMethodName   = "/koinonia.v1.KoinoniaService/GetNodeAuthors"
+	KoinoniaService_AddComment_FullMethodName       = "/koinonia.v1.KoinoniaService/AddComment"
+	KoinoniaService_ListComments_FullMethodName     = "/koinonia.v1.KoinoniaService/ListComments"
+	KoinoniaService_React_FullMethodName            = "/koinonia.v1.KoinoniaService/React"
+	KoinoniaService_GetReactions_FullMethodName     = "/koinonia.v1.KoinoniaService/GetReactions"
+	KoinoniaService_Report_FullMethodName           = "/koinonia.v1.KoinoniaService/Report"
 	KoinoniaService_Subscribe_FullMethodName        = "/koinonia.v1.KoinoniaService/Subscribe"
 )
 
@@ -86,6 +91,12 @@ type KoinoniaServiceClient interface {
 	ResolveDisplay(ctx context.Context, in *ResolveDisplayRequest, opts ...grpc.CallOption) (*ResolveDisplayResponse, error)
 	SetNodeAuthors(ctx context.Context, in *SetNodeAuthorsRequest, opts ...grpc.CallOption) (*SetNodeAuthorsResponse, error)
 	GetNodeAuthors(ctx context.Context, in *GetNodeAuthorsRequest, opts ...grpc.CallOption) (*GetNodeAuthorsResponse, error)
+	// Engagement (browser-only): comments, reactions, reports.
+	AddComment(ctx context.Context, in *AddCommentRequest, opts ...grpc.CallOption) (*AddCommentResponse, error)
+	ListComments(ctx context.Context, in *ListCommentsRequest, opts ...grpc.CallOption) (*ListCommentsResponse, error)
+	React(ctx context.Context, in *ReactRequest, opts ...grpc.CallOption) (*ReactionsResponse, error)
+	GetReactions(ctx context.Context, in *GetReactionsRequest, opts ...grpc.CallOption) (*ReactionsResponse, error)
+	Report(ctx context.Context, in *ReportRequest, opts ...grpc.CallOption) (*ReportResponse, error)
 	// Real-time cache invalidation (thin deltas, no content).
 	Subscribe(ctx context.Context, in *SubscribeRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Invalidation], error)
 }
@@ -288,6 +299,56 @@ func (c *koinoniaServiceClient) GetNodeAuthors(ctx context.Context, in *GetNodeA
 	return out, nil
 }
 
+func (c *koinoniaServiceClient) AddComment(ctx context.Context, in *AddCommentRequest, opts ...grpc.CallOption) (*AddCommentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AddCommentResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_AddComment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) ListComments(ctx context.Context, in *ListCommentsRequest, opts ...grpc.CallOption) (*ListCommentsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListCommentsResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_ListComments_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) React(ctx context.Context, in *ReactRequest, opts ...grpc.CallOption) (*ReactionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ReactionsResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_React_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) GetReactions(ctx context.Context, in *GetReactionsRequest, opts ...grpc.CallOption) (*ReactionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ReactionsResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_GetReactions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) Report(ctx context.Context, in *ReportRequest, opts ...grpc.CallOption) (*ReportResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ReportResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_Report_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *koinoniaServiceClient) Subscribe(ctx context.Context, in *SubscribeRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Invalidation], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &KoinoniaService_ServiceDesc.Streams[0], KoinoniaService_Subscribe_FullMethodName, cOpts...)
@@ -352,6 +413,12 @@ type KoinoniaServiceServer interface {
 	ResolveDisplay(context.Context, *ResolveDisplayRequest) (*ResolveDisplayResponse, error)
 	SetNodeAuthors(context.Context, *SetNodeAuthorsRequest) (*SetNodeAuthorsResponse, error)
 	GetNodeAuthors(context.Context, *GetNodeAuthorsRequest) (*GetNodeAuthorsResponse, error)
+	// Engagement (browser-only): comments, reactions, reports.
+	AddComment(context.Context, *AddCommentRequest) (*AddCommentResponse, error)
+	ListComments(context.Context, *ListCommentsRequest) (*ListCommentsResponse, error)
+	React(context.Context, *ReactRequest) (*ReactionsResponse, error)
+	GetReactions(context.Context, *GetReactionsRequest) (*ReactionsResponse, error)
+	Report(context.Context, *ReportRequest) (*ReportResponse, error)
 	// Real-time cache invalidation (thin deltas, no content).
 	Subscribe(*SubscribeRequest, grpc.ServerStreamingServer[Invalidation]) error
 	mustEmbedUnimplementedKoinoniaServiceServer()
@@ -420,6 +487,21 @@ func (UnimplementedKoinoniaServiceServer) SetNodeAuthors(context.Context, *SetNo
 }
 func (UnimplementedKoinoniaServiceServer) GetNodeAuthors(context.Context, *GetNodeAuthorsRequest) (*GetNodeAuthorsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetNodeAuthors not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) AddComment(context.Context, *AddCommentRequest) (*AddCommentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AddComment not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) ListComments(context.Context, *ListCommentsRequest) (*ListCommentsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListComments not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) React(context.Context, *ReactRequest) (*ReactionsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method React not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) GetReactions(context.Context, *GetReactionsRequest) (*ReactionsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetReactions not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) Report(context.Context, *ReportRequest) (*ReportResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method Report not implemented")
 }
 func (UnimplementedKoinoniaServiceServer) Subscribe(*SubscribeRequest, grpc.ServerStreamingServer[Invalidation]) error {
 	return status.Error(codes.Unimplemented, "method Subscribe not implemented")
@@ -787,6 +869,96 @@ func _KoinoniaService_GetNodeAuthors_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _KoinoniaService_AddComment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddCommentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).AddComment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_AddComment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).AddComment(ctx, req.(*AddCommentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_ListComments_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListCommentsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).ListComments(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_ListComments_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).ListComments(ctx, req.(*ListCommentsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_React_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReactRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).React(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_React_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).React(ctx, req.(*ReactRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_GetReactions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetReactionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).GetReactions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_GetReactions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).GetReactions(ctx, req.(*GetReactionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_Report_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReportRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).Report(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_Report_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).Report(ctx, req.(*ReportRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _KoinoniaService_Subscribe_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(SubscribeRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -880,6 +1052,26 @@ var KoinoniaService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetNodeAuthors",
 			Handler:    _KoinoniaService_GetNodeAuthors_Handler,
+		},
+		{
+			MethodName: "AddComment",
+			Handler:    _KoinoniaService_AddComment_Handler,
+		},
+		{
+			MethodName: "ListComments",
+			Handler:    _KoinoniaService_ListComments_Handler,
+		},
+		{
+			MethodName: "React",
+			Handler:    _KoinoniaService_React_Handler,
+		},
+		{
+			MethodName: "GetReactions",
+			Handler:    _KoinoniaService_GetReactions_Handler,
+		},
+		{
+			MethodName: "Report",
+			Handler:    _KoinoniaService_Report_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

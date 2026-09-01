@@ -50,6 +50,13 @@ service KoinoniaService {
   rpc SetNodeAuthors(SetNodeAuthorsRequest) returns (SetNodeAuthorsResponse);
   rpc GetNodeAuthors(GetNodeAuthorsRequest) returns (GetNodeAuthorsResponse);
 
+  // Engagement (browser-only): comments, reactions, reports.
+  rpc AddComment(AddCommentRequest) returns (AddCommentResponse);
+  rpc ListComments(ListCommentsRequest) returns (ListCommentsResponse);
+  rpc React(ReactRequest) returns (ReactionsResponse);
+  rpc GetReactions(GetReactionsRequest) returns (ReactionsResponse);
+  rpc Report(ReportRequest) returns (ReportResponse);
+
   // Real-time cache invalidation (thin deltas, no content).
   rpc Subscribe(SubscribeRequest) returns (stream Invalidation);
 }
@@ -203,6 +210,53 @@ message GetNodeAuthorsRequest {
 }
 message GetNodeAuthorsResponse {
   repeated string principals = 1; // handles
+}
+
+message Comment {
+  string id = 1;
+  string logical_id = 2;
+  string author = 3; // principal handle
+  string body = 4;
+  string parent_comment_id = 5;
+  int64 created_at = 6; // unix seconds
+  bool deleted = 7;
+}
+message AddCommentRequest {
+  string logical_id = 1;
+  string body = 2;
+  string parent_comment_id = 3;
+}
+message AddCommentResponse {
+  string comment_id = 1;
+}
+message ListCommentsRequest {
+  string logical_id = 1;
+}
+message ListCommentsResponse {
+  repeated Comment comments = 1;
+}
+
+message ReactRequest {
+  string logical_id = 1;
+  string kind = 2; // toggles the caller's reaction of this kind
+}
+message ReactionCount {
+  string kind = 1;
+  int64 count = 2;
+}
+message ReactionsResponse {
+  repeated ReactionCount reactions = 1;
+}
+message GetReactionsRequest {
+  string logical_id = 1;
+}
+
+message ReportRequest {
+  string logical_id = 1;
+  string reason = 2;
+}
+message ReportResponse {
+  string report_id = 1;
 }
 
 message PublishRequest {
