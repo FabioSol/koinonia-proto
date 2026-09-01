@@ -38,6 +38,7 @@ const (
 	KoinoniaService_ResolveDisplay_FullMethodName   = "/koinonia.v1.KoinoniaService/ResolveDisplay"
 	KoinoniaService_SetNodeAuthors_FullMethodName   = "/koinonia.v1.KoinoniaService/SetNodeAuthors"
 	KoinoniaService_GetNodeAuthors_FullMethodName   = "/koinonia.v1.KoinoniaService/GetNodeAuthors"
+	KoinoniaService_GetSpaceConfig_FullMethodName   = "/koinonia.v1.KoinoniaService/GetSpaceConfig"
 	KoinoniaService_AddComment_FullMethodName       = "/koinonia.v1.KoinoniaService/AddComment"
 	KoinoniaService_ListComments_FullMethodName     = "/koinonia.v1.KoinoniaService/ListComments"
 	KoinoniaService_React_FullMethodName            = "/koinonia.v1.KoinoniaService/React"
@@ -92,6 +93,8 @@ type KoinoniaServiceClient interface {
 	ResolveDisplay(ctx context.Context, in *ResolveDisplayRequest, opts ...grpc.CallOption) (*ResolveDisplayResponse, error)
 	SetNodeAuthors(ctx context.Context, in *SetNodeAuthorsRequest, opts ...grpc.CallOption) (*SetNodeAuthorsResponse, error)
 	GetNodeAuthors(ctx context.Context, in *GetNodeAuthorsRequest, opts ...grpc.CallOption) (*GetNodeAuthorsResponse, error)
+	// Space render settings the browser needs (expiration policy). FUSE ignores it.
+	GetSpaceConfig(ctx context.Context, in *SpaceConfigRequest, opts ...grpc.CallOption) (*SpaceConfigResponse, error)
 	// Engagement (browser-only): comments, reactions, reports.
 	AddComment(ctx context.Context, in *AddCommentRequest, opts ...grpc.CallOption) (*AddCommentResponse, error)
 	ListComments(ctx context.Context, in *ListCommentsRequest, opts ...grpc.CallOption) (*ListCommentsResponse, error)
@@ -303,6 +306,16 @@ func (c *koinoniaServiceClient) GetNodeAuthors(ctx context.Context, in *GetNodeA
 	return out, nil
 }
 
+func (c *koinoniaServiceClient) GetSpaceConfig(ctx context.Context, in *SpaceConfigRequest, opts ...grpc.CallOption) (*SpaceConfigResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SpaceConfigResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_GetSpaceConfig_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *koinoniaServiceClient) AddComment(ctx context.Context, in *AddCommentRequest, opts ...grpc.CallOption) (*AddCommentResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(AddCommentResponse)
@@ -427,6 +440,8 @@ type KoinoniaServiceServer interface {
 	ResolveDisplay(context.Context, *ResolveDisplayRequest) (*ResolveDisplayResponse, error)
 	SetNodeAuthors(context.Context, *SetNodeAuthorsRequest) (*SetNodeAuthorsResponse, error)
 	GetNodeAuthors(context.Context, *GetNodeAuthorsRequest) (*GetNodeAuthorsResponse, error)
+	// Space render settings the browser needs (expiration policy). FUSE ignores it.
+	GetSpaceConfig(context.Context, *SpaceConfigRequest) (*SpaceConfigResponse, error)
 	// Engagement (browser-only): comments, reactions, reports.
 	AddComment(context.Context, *AddCommentRequest) (*AddCommentResponse, error)
 	ListComments(context.Context, *ListCommentsRequest) (*ListCommentsResponse, error)
@@ -504,6 +519,9 @@ func (UnimplementedKoinoniaServiceServer) SetNodeAuthors(context.Context, *SetNo
 }
 func (UnimplementedKoinoniaServiceServer) GetNodeAuthors(context.Context, *GetNodeAuthorsRequest) (*GetNodeAuthorsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetNodeAuthors not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) GetSpaceConfig(context.Context, *SpaceConfigRequest) (*SpaceConfigResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetSpaceConfig not implemented")
 }
 func (UnimplementedKoinoniaServiceServer) AddComment(context.Context, *AddCommentRequest) (*AddCommentResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AddComment not implemented")
@@ -889,6 +907,24 @@ func _KoinoniaService_GetNodeAuthors_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _KoinoniaService_GetSpaceConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SpaceConfigRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).GetSpaceConfig(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_GetSpaceConfig_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).GetSpaceConfig(ctx, req.(*SpaceConfigRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _KoinoniaService_AddComment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AddCommentRequest)
 	if err := dec(in); err != nil {
@@ -1090,6 +1126,10 @@ var KoinoniaService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetNodeAuthors",
 			Handler:    _KoinoniaService_GetNodeAuthors_Handler,
+		},
+		{
+			MethodName: "GetSpaceConfig",
+			Handler:    _KoinoniaService_GetSpaceConfig_Handler,
 		},
 		{
 			MethodName: "AddComment",

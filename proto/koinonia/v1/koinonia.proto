@@ -50,6 +50,9 @@ service KoinoniaService {
   rpc SetNodeAuthors(SetNodeAuthorsRequest) returns (SetNodeAuthorsResponse);
   rpc GetNodeAuthors(GetNodeAuthorsRequest) returns (GetNodeAuthorsResponse);
 
+  // Space render settings the browser needs (expiration policy). FUSE ignores it.
+  rpc GetSpaceConfig(SpaceConfigRequest) returns (SpaceConfigResponse);
+
   // Engagement (browser-only): comments, reactions, reports.
   rpc AddComment(AddCommentRequest) returns (AddCommentResponse);
   rpc ListComments(ListCommentsRequest) returns (ListCommentsResponse);
@@ -261,6 +264,14 @@ message ReportRequest {
 }
 message ReportResponse {
   string report_id = 1;
+}
+
+message SpaceConfigRequest {
+  string space_id = 1;
+}
+message SpaceConfigResponse {
+  bool hide_expired = 1;      // filter expired nodes from listings + search
+  int32 default_ttl_days = 2; // fallback TTL when an article omits an expiry (0 = none)
 }
 
 message SearchRequest {
