@@ -52,6 +52,11 @@ psql_c < "$MIG_DIR/000007_engagement.up.sql"
 psql_c -tAc "SELECT 1 FROM information_schema.tables WHERE table_name='comments'" | grep -q 1 \
   && echo "  ✓ engagement" || { echo "  ✗ engagement missing"; exit 1; }
 
+echo "apply 000008_search.up.sql…"
+psql_c < "$MIG_DIR/000008_search.up.sql"
+psql_c -tAc "SELECT 1 FROM information_schema.tables WHERE table_name='search_index'" | grep -q 1 \
+  && echo "  ✓ search_index" || { echo "  ✗ search_index missing"; exit 1; }
+
 echo "assert duplicate MAIN siblings rejected (NULLS NOT DISTINCT)…"
 psql_c -c "INSERT INTO spaces (id, slug) VALUES ('00000000-0000-0000-0000-0000000000aa','t');" >/dev/null
 psql_c -c "INSERT INTO nodes (logical_id, space_id, name, kind) VALUES (gen_random_uuid(),'00000000-0000-0000-0000-0000000000aa','dup','article');" >/dev/null
@@ -68,6 +73,7 @@ COUNT=$(psql_c -tAc "SELECT count(*) FROM nodes WHERE space_id='00000000-0000-00
 
 echo "apply down migrations (round-trip)…"
 psql_c < "$MIG_DIR/000002_dev_seed.down.sql"
+psql_c < "$MIG_DIR/000008_search.down.sql"
 psql_c < "$MIG_DIR/000007_engagement.down.sql"
 psql_c < "$MIG_DIR/000006_node_authors.down.sql"
 psql_c < "$MIG_DIR/000005_identity.down.sql"

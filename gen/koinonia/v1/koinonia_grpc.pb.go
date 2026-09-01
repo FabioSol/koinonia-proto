@@ -43,6 +43,7 @@ const (
 	KoinoniaService_React_FullMethodName            = "/koinonia.v1.KoinoniaService/React"
 	KoinoniaService_GetReactions_FullMethodName     = "/koinonia.v1.KoinoniaService/GetReactions"
 	KoinoniaService_Report_FullMethodName           = "/koinonia.v1.KoinoniaService/Report"
+	KoinoniaService_Search_FullMethodName           = "/koinonia.v1.KoinoniaService/Search"
 	KoinoniaService_Subscribe_FullMethodName        = "/koinonia.v1.KoinoniaService/Subscribe"
 )
 
@@ -97,6 +98,9 @@ type KoinoniaServiceClient interface {
 	React(ctx context.Context, in *ReactRequest, opts ...grpc.CallOption) (*ReactionsResponse, error)
 	GetReactions(ctx context.Context, in *GetReactionsRequest, opts ...grpc.CallOption) (*ReactionsResponse, error)
 	Report(ctx context.Context, in *ReportRequest, opts ...grpc.CallOption) (*ReportResponse, error)
+	// Full-text search (Postgres FTS). Results are unioned across the spaces the
+	// caller's token grants >= viewer; intra-space filters to one space.
+	Search(ctx context.Context, in *SearchRequest, opts ...grpc.CallOption) (*SearchResponse, error)
 	// Real-time cache invalidation (thin deltas, no content).
 	Subscribe(ctx context.Context, in *SubscribeRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Invalidation], error)
 }
@@ -349,6 +353,16 @@ func (c *koinoniaServiceClient) Report(ctx context.Context, in *ReportRequest, o
 	return out, nil
 }
 
+func (c *koinoniaServiceClient) Search(ctx context.Context, in *SearchRequest, opts ...grpc.CallOption) (*SearchResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SearchResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_Search_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *koinoniaServiceClient) Subscribe(ctx context.Context, in *SubscribeRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Invalidation], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &KoinoniaService_ServiceDesc.Streams[0], KoinoniaService_Subscribe_FullMethodName, cOpts...)
@@ -419,6 +433,9 @@ type KoinoniaServiceServer interface {
 	React(context.Context, *ReactRequest) (*ReactionsResponse, error)
 	GetReactions(context.Context, *GetReactionsRequest) (*ReactionsResponse, error)
 	Report(context.Context, *ReportRequest) (*ReportResponse, error)
+	// Full-text search (Postgres FTS). Results are unioned across the spaces the
+	// caller's token grants >= viewer; intra-space filters to one space.
+	Search(context.Context, *SearchRequest) (*SearchResponse, error)
 	// Real-time cache invalidation (thin deltas, no content).
 	Subscribe(*SubscribeRequest, grpc.ServerStreamingServer[Invalidation]) error
 	mustEmbedUnimplementedKoinoniaServiceServer()
@@ -502,6 +519,9 @@ func (UnimplementedKoinoniaServiceServer) GetReactions(context.Context, *GetReac
 }
 func (UnimplementedKoinoniaServiceServer) Report(context.Context, *ReportRequest) (*ReportResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Report not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) Search(context.Context, *SearchRequest) (*SearchResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method Search not implemented")
 }
 func (UnimplementedKoinoniaServiceServer) Subscribe(*SubscribeRequest, grpc.ServerStreamingServer[Invalidation]) error {
 	return status.Error(codes.Unimplemented, "method Subscribe not implemented")
@@ -959,6 +979,24 @@ func _KoinoniaService_Report_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _KoinoniaService_Search_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SearchRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).Search(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_Search_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).Search(ctx, req.(*SearchRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _KoinoniaService_Subscribe_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(SubscribeRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -1072,6 +1110,10 @@ var KoinoniaService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Report",
 			Handler:    _KoinoniaService_Report_Handler,
+		},
+		{
+			MethodName: "Search",
+			Handler:    _KoinoniaService_Search_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

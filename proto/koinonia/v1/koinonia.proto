@@ -57,6 +57,10 @@ service KoinoniaService {
   rpc GetReactions(GetReactionsRequest) returns (ReactionsResponse);
   rpc Report(ReportRequest) returns (ReportResponse);
 
+  // Full-text search (Postgres FTS). Results are unioned across the spaces the
+  // caller's token grants >= viewer; intra-space filters to one space.
+  rpc Search(SearchRequest) returns (SearchResponse);
+
   // Real-time cache invalidation (thin deltas, no content).
   rpc Subscribe(SubscribeRequest) returns (stream Invalidation);
 }
@@ -257,6 +261,32 @@ message ReportRequest {
 }
 message ReportResponse {
   string report_id = 1;
+}
+
+message SearchRequest {
+  string query = 1;
+  string space_id = 2;    // "" = inter-space (all granted); else that one space
+  bool hide_expired = 3;  // drop results whose expiry_date has passed
+  map<string, string> facet_filters = 4; // fm_facets @> {k:v} narrowing
+  string facet_key = 5;   // aggregate value counts for this frontmatter key
+  int32 limit = 6;        // 0 -> server default
+}
+message SearchHit {
+  string logical_id = 1;
+  string space_id = 2;
+  string title = 3;       // fm_facets.title (falls back to name client-side)
+  string snippet = 4;     // ts_headline over the plaintext
+  double rank = 5;        // ts_rank
+  bytes facets_json = 6;  // the node's frontmatter facets
+}
+message SearchFacet {
+  string key = 1;
+  string value = 2;
+  int64 count = 3;
+}
+message SearchResponse {
+  repeated SearchHit hits = 1;
+  repeated SearchFacet facets = 2; // value counts for facet_key (when requested)
 }
 
 message PublishRequest {
