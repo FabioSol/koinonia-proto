@@ -64,6 +64,13 @@ service KoinoniaService {
   // caller's token grants >= viewer; intra-space filters to one space.
   rpc Search(SearchRequest) returns (SearchResponse);
 
+  // Embeddable links (ADR-0022): publish/revoke a signed opaque slug for a node,
+  // and resolve one on the public render path. Publish/Revoke need editor+;
+  // Resolve is public and returns main-only targets, never drafts.
+  rpc PublishEmbed(PublishEmbedRequest) returns (PublishEmbedResponse);
+  rpc RevokeEmbed(RevokeEmbedRequest) returns (RevokeEmbedResponse);
+  rpc ResolveEmbed(ResolveEmbedRequest) returns (ResolveEmbedResponse);
+
   // Real-time cache invalidation (thin deltas, no content).
   rpc Subscribe(SubscribeRequest) returns (stream Invalidation);
 }
@@ -272,6 +279,30 @@ message SpaceConfigRequest {
 message SpaceConfigResponse {
   bool hide_expired = 1;      // filter expired nodes from listings + search
   int32 default_ttl_days = 2; // fallback TTL when an article omits an expiry (0 = none)
+}
+
+message PublishEmbedRequest {
+  string logical_id = 1;
+  string mode = 2;       // "live" (tracks HEAD) | "pinned" (fixed seq)
+  int64 pinned_seq = 3;  // required when mode = pinned
+}
+message PublishEmbedResponse {
+  string token = 1; // opaque signed token for the public URL (slug.signature)
+  string slug = 2;  // the bare slug (owners revoke by slug)
+}
+message RevokeEmbedRequest {
+  string slug = 1;
+}
+message RevokeEmbedResponse {}
+message ResolveEmbedRequest {
+  string token = 1;
+}
+message ResolveEmbedResponse {
+  string status = 1; // "ok" | "not_found" | "revoked"
+  string logical_id = 2;
+  string space_id = 3;
+  string mode = 4;
+  int64 pinned_seq = 5;
 }
 
 message SearchRequest {

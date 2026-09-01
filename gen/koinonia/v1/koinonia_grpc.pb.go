@@ -45,6 +45,9 @@ const (
 	KoinoniaService_GetReactions_FullMethodName     = "/koinonia.v1.KoinoniaService/GetReactions"
 	KoinoniaService_Report_FullMethodName           = "/koinonia.v1.KoinoniaService/Report"
 	KoinoniaService_Search_FullMethodName           = "/koinonia.v1.KoinoniaService/Search"
+	KoinoniaService_PublishEmbed_FullMethodName     = "/koinonia.v1.KoinoniaService/PublishEmbed"
+	KoinoniaService_RevokeEmbed_FullMethodName      = "/koinonia.v1.KoinoniaService/RevokeEmbed"
+	KoinoniaService_ResolveEmbed_FullMethodName     = "/koinonia.v1.KoinoniaService/ResolveEmbed"
 	KoinoniaService_Subscribe_FullMethodName        = "/koinonia.v1.KoinoniaService/Subscribe"
 )
 
@@ -104,6 +107,12 @@ type KoinoniaServiceClient interface {
 	// Full-text search (Postgres FTS). Results are unioned across the spaces the
 	// caller's token grants >= viewer; intra-space filters to one space.
 	Search(ctx context.Context, in *SearchRequest, opts ...grpc.CallOption) (*SearchResponse, error)
+	// Embeddable links (ADR-0022): publish/revoke a signed opaque slug for a node,
+	// and resolve one on the public render path. Publish/Revoke need editor+;
+	// Resolve is public and returns main-only targets, never drafts.
+	PublishEmbed(ctx context.Context, in *PublishEmbedRequest, opts ...grpc.CallOption) (*PublishEmbedResponse, error)
+	RevokeEmbed(ctx context.Context, in *RevokeEmbedRequest, opts ...grpc.CallOption) (*RevokeEmbedResponse, error)
+	ResolveEmbed(ctx context.Context, in *ResolveEmbedRequest, opts ...grpc.CallOption) (*ResolveEmbedResponse, error)
 	// Real-time cache invalidation (thin deltas, no content).
 	Subscribe(ctx context.Context, in *SubscribeRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Invalidation], error)
 }
@@ -376,6 +385,36 @@ func (c *koinoniaServiceClient) Search(ctx context.Context, in *SearchRequest, o
 	return out, nil
 }
 
+func (c *koinoniaServiceClient) PublishEmbed(ctx context.Context, in *PublishEmbedRequest, opts ...grpc.CallOption) (*PublishEmbedResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PublishEmbedResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_PublishEmbed_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) RevokeEmbed(ctx context.Context, in *RevokeEmbedRequest, opts ...grpc.CallOption) (*RevokeEmbedResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RevokeEmbedResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_RevokeEmbed_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) ResolveEmbed(ctx context.Context, in *ResolveEmbedRequest, opts ...grpc.CallOption) (*ResolveEmbedResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ResolveEmbedResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_ResolveEmbed_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *koinoniaServiceClient) Subscribe(ctx context.Context, in *SubscribeRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Invalidation], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &KoinoniaService_ServiceDesc.Streams[0], KoinoniaService_Subscribe_FullMethodName, cOpts...)
@@ -451,6 +490,12 @@ type KoinoniaServiceServer interface {
 	// Full-text search (Postgres FTS). Results are unioned across the spaces the
 	// caller's token grants >= viewer; intra-space filters to one space.
 	Search(context.Context, *SearchRequest) (*SearchResponse, error)
+	// Embeddable links (ADR-0022): publish/revoke a signed opaque slug for a node,
+	// and resolve one on the public render path. Publish/Revoke need editor+;
+	// Resolve is public and returns main-only targets, never drafts.
+	PublishEmbed(context.Context, *PublishEmbedRequest) (*PublishEmbedResponse, error)
+	RevokeEmbed(context.Context, *RevokeEmbedRequest) (*RevokeEmbedResponse, error)
+	ResolveEmbed(context.Context, *ResolveEmbedRequest) (*ResolveEmbedResponse, error)
 	// Real-time cache invalidation (thin deltas, no content).
 	Subscribe(*SubscribeRequest, grpc.ServerStreamingServer[Invalidation]) error
 	mustEmbedUnimplementedKoinoniaServiceServer()
@@ -540,6 +585,15 @@ func (UnimplementedKoinoniaServiceServer) Report(context.Context, *ReportRequest
 }
 func (UnimplementedKoinoniaServiceServer) Search(context.Context, *SearchRequest) (*SearchResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Search not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) PublishEmbed(context.Context, *PublishEmbedRequest) (*PublishEmbedResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method PublishEmbed not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) RevokeEmbed(context.Context, *RevokeEmbedRequest) (*RevokeEmbedResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RevokeEmbed not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) ResolveEmbed(context.Context, *ResolveEmbedRequest) (*ResolveEmbedResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ResolveEmbed not implemented")
 }
 func (UnimplementedKoinoniaServiceServer) Subscribe(*SubscribeRequest, grpc.ServerStreamingServer[Invalidation]) error {
 	return status.Error(codes.Unimplemented, "method Subscribe not implemented")
@@ -1033,6 +1087,60 @@ func _KoinoniaService_Search_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _KoinoniaService_PublishEmbed_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PublishEmbedRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).PublishEmbed(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_PublishEmbed_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).PublishEmbed(ctx, req.(*PublishEmbedRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_RevokeEmbed_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RevokeEmbedRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).RevokeEmbed(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_RevokeEmbed_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).RevokeEmbed(ctx, req.(*RevokeEmbedRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_ResolveEmbed_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResolveEmbedRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).ResolveEmbed(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_ResolveEmbed_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).ResolveEmbed(ctx, req.(*ResolveEmbedRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _KoinoniaService_Subscribe_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(SubscribeRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -1154,6 +1262,18 @@ var KoinoniaService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Search",
 			Handler:    _KoinoniaService_Search_Handler,
+		},
+		{
+			MethodName: "PublishEmbed",
+			Handler:    _KoinoniaService_PublishEmbed_Handler,
+		},
+		{
+			MethodName: "RevokeEmbed",
+			Handler:    _KoinoniaService_RevokeEmbed_Handler,
+		},
+		{
+			MethodName: "ResolveEmbed",
+			Handler:    _KoinoniaService_ResolveEmbed_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
