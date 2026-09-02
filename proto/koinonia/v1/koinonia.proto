@@ -52,6 +52,8 @@ service KoinoniaService {
   // job; poll the job for progress/result.
   rpc ImportSpaceFromGit(ImportSpaceFromGitRequest) returns (SyncJob);
   rpc GetSyncJob(GetSyncJobRequest) returns (SyncJob);
+  // Export a space's main tree to a new/empty repo as the initial commit (editor+).
+  rpc ExportSpaceToNewRepo(ExportToNewRepoRequest) returns (SyncJob);
 
   // Section display config (space default merged with the section's frontmatter)
   // and node authorship (byline attribution).
@@ -212,6 +214,10 @@ message ImportSpaceFromGitRequest {
 }
 message GetSyncJobRequest {
   string job_id = 1;
+}
+message ExportToNewRepoRequest {
+  string space_id = 1;
+  string remote = 2; // target repo URL (must be empty/new)
 }
 // SyncJob is the state of an async import/export job.
 message SyncJob {
