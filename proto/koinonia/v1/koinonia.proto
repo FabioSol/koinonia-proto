@@ -54,6 +54,8 @@ service KoinoniaService {
   rpc GetSyncJob(GetSyncJobRequest) returns (SyncJob);
   // Export a space's main tree to a new/empty repo as the initial commit (editor+).
   rpc ExportSpaceToNewRepo(ExportToNewRepoRequest) returns (SyncJob);
+  // Export the diff since last sync back to the linked origin as a branch + PR.
+  rpc ExportSpaceToOrigin(ExportToOriginRequest) returns (SyncJob);
 
   // Section display config (space default merged with the section's frontmatter)
   // and node authorship (byline attribution).
@@ -218,6 +220,9 @@ message GetSyncJobRequest {
 message ExportToNewRepoRequest {
   string space_id = 1;
   string remote = 2; // target repo URL (must be empty/new)
+}
+message ExportToOriginRequest {
+  string space_id = 1; // must be a linked space (imported/exported before)
 }
 // SyncJob is the state of an async import/export job.
 message SyncJob {

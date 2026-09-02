@@ -39,6 +39,7 @@ const (
 	KoinoniaService_ImportSpaceFromGit_FullMethodName   = "/koinonia.v1.KoinoniaService/ImportSpaceFromGit"
 	KoinoniaService_GetSyncJob_FullMethodName           = "/koinonia.v1.KoinoniaService/GetSyncJob"
 	KoinoniaService_ExportSpaceToNewRepo_FullMethodName = "/koinonia.v1.KoinoniaService/ExportSpaceToNewRepo"
+	KoinoniaService_ExportSpaceToOrigin_FullMethodName  = "/koinonia.v1.KoinoniaService/ExportSpaceToOrigin"
 	KoinoniaService_ResolveDisplay_FullMethodName       = "/koinonia.v1.KoinoniaService/ResolveDisplay"
 	KoinoniaService_SetNodeAuthors_FullMethodName       = "/koinonia.v1.KoinoniaService/SetNodeAuthors"
 	KoinoniaService_GetNodeAuthors_FullMethodName       = "/koinonia.v1.KoinoniaService/GetNodeAuthors"
@@ -104,6 +105,8 @@ type KoinoniaServiceClient interface {
 	GetSyncJob(ctx context.Context, in *GetSyncJobRequest, opts ...grpc.CallOption) (*SyncJob, error)
 	// Export a space's main tree to a new/empty repo as the initial commit (editor+).
 	ExportSpaceToNewRepo(ctx context.Context, in *ExportToNewRepoRequest, opts ...grpc.CallOption) (*SyncJob, error)
+	// Export the diff since last sync back to the linked origin as a branch + PR.
+	ExportSpaceToOrigin(ctx context.Context, in *ExportToOriginRequest, opts ...grpc.CallOption) (*SyncJob, error)
 	// Section display config (space default merged with the section's frontmatter)
 	// and node authorship (byline attribution).
 	ResolveDisplay(ctx context.Context, in *ResolveDisplayRequest, opts ...grpc.CallOption) (*ResolveDisplayResponse, error)
@@ -338,6 +341,16 @@ func (c *koinoniaServiceClient) ExportSpaceToNewRepo(ctx context.Context, in *Ex
 	return out, nil
 }
 
+func (c *koinoniaServiceClient) ExportSpaceToOrigin(ctx context.Context, in *ExportToOriginRequest, opts ...grpc.CallOption) (*SyncJob, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SyncJob)
+	err := c.cc.Invoke(ctx, KoinoniaService_ExportSpaceToOrigin_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *koinoniaServiceClient) ResolveDisplay(ctx context.Context, in *ResolveDisplayRequest, opts ...grpc.CallOption) (*ResolveDisplayResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ResolveDisplayResponse)
@@ -536,6 +549,8 @@ type KoinoniaServiceServer interface {
 	GetSyncJob(context.Context, *GetSyncJobRequest) (*SyncJob, error)
 	// Export a space's main tree to a new/empty repo as the initial commit (editor+).
 	ExportSpaceToNewRepo(context.Context, *ExportToNewRepoRequest) (*SyncJob, error)
+	// Export the diff since last sync back to the linked origin as a branch + PR.
+	ExportSpaceToOrigin(context.Context, *ExportToOriginRequest) (*SyncJob, error)
 	// Section display config (space default merged with the section's frontmatter)
 	// and node authorship (byline attribution).
 	ResolveDisplay(context.Context, *ResolveDisplayRequest) (*ResolveDisplayResponse, error)
@@ -629,6 +644,9 @@ func (UnimplementedKoinoniaServiceServer) GetSyncJob(context.Context, *GetSyncJo
 }
 func (UnimplementedKoinoniaServiceServer) ExportSpaceToNewRepo(context.Context, *ExportToNewRepoRequest) (*SyncJob, error) {
 	return nil, status.Error(codes.Unimplemented, "method ExportSpaceToNewRepo not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) ExportSpaceToOrigin(context.Context, *ExportToOriginRequest) (*SyncJob, error) {
+	return nil, status.Error(codes.Unimplemented, "method ExportSpaceToOrigin not implemented")
 }
 func (UnimplementedKoinoniaServiceServer) ResolveDisplay(context.Context, *ResolveDisplayRequest) (*ResolveDisplayResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ResolveDisplay not implemented")
@@ -1053,6 +1071,24 @@ func _KoinoniaService_ExportSpaceToNewRepo_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _KoinoniaService_ExportSpaceToOrigin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExportToOriginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).ExportSpaceToOrigin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_ExportSpaceToOrigin_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).ExportSpaceToOrigin(ctx, req.(*ExportToOriginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _KoinoniaService_ResolveDisplay_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ResolveDisplayRequest)
 	if err := dec(in); err != nil {
@@ -1384,6 +1420,10 @@ var KoinoniaService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ExportSpaceToNewRepo",
 			Handler:    _KoinoniaService_ExportSpaceToNewRepo_Handler,
+		},
+		{
+			MethodName: "ExportSpaceToOrigin",
+			Handler:    _KoinoniaService_ExportSpaceToOrigin_Handler,
 		},
 		{
 			MethodName: "ResolveDisplay",
