@@ -19,37 +19,39 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	KoinoniaService_Lookup_FullMethodName           = "/koinonia.v1.KoinoniaService/Lookup"
-	KoinoniaService_ReadDir_FullMethodName          = "/koinonia.v1.KoinoniaService/ReadDir"
-	KoinoniaService_Getattr_FullMethodName          = "/koinonia.v1.KoinoniaService/Getattr"
-	KoinoniaService_BlobExists_FullMethodName       = "/koinonia.v1.KoinoniaService/BlobExists"
-	KoinoniaService_PresignGet_FullMethodName       = "/koinonia.v1.KoinoniaService/PresignGet"
-	KoinoniaService_PresignPut_FullMethodName       = "/koinonia.v1.KoinoniaService/PresignPut"
-	KoinoniaService_Commit_FullMethodName           = "/koinonia.v1.KoinoniaService/Commit"
-	KoinoniaService_Delete_FullMethodName           = "/koinonia.v1.KoinoniaService/Delete"
-	KoinoniaService_Publish_FullMethodName          = "/koinonia.v1.KoinoniaService/Publish"
-	KoinoniaService_AsOfLookup_FullMethodName       = "/koinonia.v1.KoinoniaService/AsOfLookup"
-	KoinoniaService_AsOfReadDir_FullMethodName      = "/koinonia.v1.KoinoniaService/AsOfReadDir"
-	KoinoniaService_NodeHistory_FullMethodName      = "/koinonia.v1.KoinoniaService/NodeHistory"
-	KoinoniaService_CreateCheckpoint_FullMethodName = "/koinonia.v1.KoinoniaService/CreateCheckpoint"
-	KoinoniaService_ListCheckpoints_FullMethodName  = "/koinonia.v1.KoinoniaService/ListCheckpoints"
-	KoinoniaService_Login_FullMethodName            = "/koinonia.v1.KoinoniaService/Login"
-	KoinoniaService_IssueAgentToken_FullMethodName  = "/koinonia.v1.KoinoniaService/IssueAgentToken"
-	KoinoniaService_CreateSpace_FullMethodName      = "/koinonia.v1.KoinoniaService/CreateSpace"
-	KoinoniaService_ResolveDisplay_FullMethodName   = "/koinonia.v1.KoinoniaService/ResolveDisplay"
-	KoinoniaService_SetNodeAuthors_FullMethodName   = "/koinonia.v1.KoinoniaService/SetNodeAuthors"
-	KoinoniaService_GetNodeAuthors_FullMethodName   = "/koinonia.v1.KoinoniaService/GetNodeAuthors"
-	KoinoniaService_GetSpaceConfig_FullMethodName   = "/koinonia.v1.KoinoniaService/GetSpaceConfig"
-	KoinoniaService_AddComment_FullMethodName       = "/koinonia.v1.KoinoniaService/AddComment"
-	KoinoniaService_ListComments_FullMethodName     = "/koinonia.v1.KoinoniaService/ListComments"
-	KoinoniaService_React_FullMethodName            = "/koinonia.v1.KoinoniaService/React"
-	KoinoniaService_GetReactions_FullMethodName     = "/koinonia.v1.KoinoniaService/GetReactions"
-	KoinoniaService_Report_FullMethodName           = "/koinonia.v1.KoinoniaService/Report"
-	KoinoniaService_Search_FullMethodName           = "/koinonia.v1.KoinoniaService/Search"
-	KoinoniaService_PublishEmbed_FullMethodName     = "/koinonia.v1.KoinoniaService/PublishEmbed"
-	KoinoniaService_RevokeEmbed_FullMethodName      = "/koinonia.v1.KoinoniaService/RevokeEmbed"
-	KoinoniaService_ResolveEmbed_FullMethodName     = "/koinonia.v1.KoinoniaService/ResolveEmbed"
-	KoinoniaService_Subscribe_FullMethodName        = "/koinonia.v1.KoinoniaService/Subscribe"
+	KoinoniaService_Lookup_FullMethodName             = "/koinonia.v1.KoinoniaService/Lookup"
+	KoinoniaService_ReadDir_FullMethodName            = "/koinonia.v1.KoinoniaService/ReadDir"
+	KoinoniaService_Getattr_FullMethodName            = "/koinonia.v1.KoinoniaService/Getattr"
+	KoinoniaService_BlobExists_FullMethodName         = "/koinonia.v1.KoinoniaService/BlobExists"
+	KoinoniaService_PresignGet_FullMethodName         = "/koinonia.v1.KoinoniaService/PresignGet"
+	KoinoniaService_PresignPut_FullMethodName         = "/koinonia.v1.KoinoniaService/PresignPut"
+	KoinoniaService_Commit_FullMethodName             = "/koinonia.v1.KoinoniaService/Commit"
+	KoinoniaService_Delete_FullMethodName             = "/koinonia.v1.KoinoniaService/Delete"
+	KoinoniaService_Publish_FullMethodName            = "/koinonia.v1.KoinoniaService/Publish"
+	KoinoniaService_AsOfLookup_FullMethodName         = "/koinonia.v1.KoinoniaService/AsOfLookup"
+	KoinoniaService_AsOfReadDir_FullMethodName        = "/koinonia.v1.KoinoniaService/AsOfReadDir"
+	KoinoniaService_NodeHistory_FullMethodName        = "/koinonia.v1.KoinoniaService/NodeHistory"
+	KoinoniaService_CreateCheckpoint_FullMethodName   = "/koinonia.v1.KoinoniaService/CreateCheckpoint"
+	KoinoniaService_ListCheckpoints_FullMethodName    = "/koinonia.v1.KoinoniaService/ListCheckpoints"
+	KoinoniaService_Login_FullMethodName              = "/koinonia.v1.KoinoniaService/Login"
+	KoinoniaService_IssueAgentToken_FullMethodName    = "/koinonia.v1.KoinoniaService/IssueAgentToken"
+	KoinoniaService_CreateSpace_FullMethodName        = "/koinonia.v1.KoinoniaService/CreateSpace"
+	KoinoniaService_ImportSpaceFromGit_FullMethodName = "/koinonia.v1.KoinoniaService/ImportSpaceFromGit"
+	KoinoniaService_GetSyncJob_FullMethodName         = "/koinonia.v1.KoinoniaService/GetSyncJob"
+	KoinoniaService_ResolveDisplay_FullMethodName     = "/koinonia.v1.KoinoniaService/ResolveDisplay"
+	KoinoniaService_SetNodeAuthors_FullMethodName     = "/koinonia.v1.KoinoniaService/SetNodeAuthors"
+	KoinoniaService_GetNodeAuthors_FullMethodName     = "/koinonia.v1.KoinoniaService/GetNodeAuthors"
+	KoinoniaService_GetSpaceConfig_FullMethodName     = "/koinonia.v1.KoinoniaService/GetSpaceConfig"
+	KoinoniaService_AddComment_FullMethodName         = "/koinonia.v1.KoinoniaService/AddComment"
+	KoinoniaService_ListComments_FullMethodName       = "/koinonia.v1.KoinoniaService/ListComments"
+	KoinoniaService_React_FullMethodName              = "/koinonia.v1.KoinoniaService/React"
+	KoinoniaService_GetReactions_FullMethodName       = "/koinonia.v1.KoinoniaService/GetReactions"
+	KoinoniaService_Report_FullMethodName             = "/koinonia.v1.KoinoniaService/Report"
+	KoinoniaService_Search_FullMethodName             = "/koinonia.v1.KoinoniaService/Search"
+	KoinoniaService_PublishEmbed_FullMethodName       = "/koinonia.v1.KoinoniaService/PublishEmbed"
+	KoinoniaService_RevokeEmbed_FullMethodName        = "/koinonia.v1.KoinoniaService/RevokeEmbed"
+	KoinoniaService_ResolveEmbed_FullMethodName       = "/koinonia.v1.KoinoniaService/ResolveEmbed"
+	KoinoniaService_Subscribe_FullMethodName          = "/koinonia.v1.KoinoniaService/Subscribe"
 )
 
 // KoinoniaServiceClient is the client API for KoinoniaService service.
@@ -95,6 +97,10 @@ type KoinoniaServiceClient interface {
 	// Space provisioning (ADR-0029): bootstrap a space, its root node, and the
 	// caller's owner grant in one transaction. The only path that creates a space.
 	CreateSpace(ctx context.Context, in *CreateSpaceRequest, opts ...grpc.CallOption) (*CreateSpaceResponse, error)
+	// Git interchange (ADR-0030): import a remote repo into a new space as an async
+	// job; poll the job for progress/result.
+	ImportSpaceFromGit(ctx context.Context, in *ImportSpaceFromGitRequest, opts ...grpc.CallOption) (*SyncJob, error)
+	GetSyncJob(ctx context.Context, in *GetSyncJobRequest, opts ...grpc.CallOption) (*SyncJob, error)
 	// Section display config (space default merged with the section's frontmatter)
 	// and node authorship (byline attribution).
 	ResolveDisplay(ctx context.Context, in *ResolveDisplayRequest, opts ...grpc.CallOption) (*ResolveDisplayResponse, error)
@@ -299,6 +305,26 @@ func (c *koinoniaServiceClient) CreateSpace(ctx context.Context, in *CreateSpace
 	return out, nil
 }
 
+func (c *koinoniaServiceClient) ImportSpaceFromGit(ctx context.Context, in *ImportSpaceFromGitRequest, opts ...grpc.CallOption) (*SyncJob, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SyncJob)
+	err := c.cc.Invoke(ctx, KoinoniaService_ImportSpaceFromGit_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) GetSyncJob(ctx context.Context, in *GetSyncJobRequest, opts ...grpc.CallOption) (*SyncJob, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SyncJob)
+	err := c.cc.Invoke(ctx, KoinoniaService_GetSyncJob_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *koinoniaServiceClient) ResolveDisplay(ctx context.Context, in *ResolveDisplayRequest, opts ...grpc.CallOption) (*ResolveDisplayResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ResolveDisplayResponse)
@@ -491,6 +517,10 @@ type KoinoniaServiceServer interface {
 	// Space provisioning (ADR-0029): bootstrap a space, its root node, and the
 	// caller's owner grant in one transaction. The only path that creates a space.
 	CreateSpace(context.Context, *CreateSpaceRequest) (*CreateSpaceResponse, error)
+	// Git interchange (ADR-0030): import a remote repo into a new space as an async
+	// job; poll the job for progress/result.
+	ImportSpaceFromGit(context.Context, *ImportSpaceFromGitRequest) (*SyncJob, error)
+	GetSyncJob(context.Context, *GetSyncJobRequest) (*SyncJob, error)
 	// Section display config (space default merged with the section's frontmatter)
 	// and node authorship (byline attribution).
 	ResolveDisplay(context.Context, *ResolveDisplayRequest) (*ResolveDisplayResponse, error)
@@ -575,6 +605,12 @@ func (UnimplementedKoinoniaServiceServer) IssueAgentToken(context.Context, *Issu
 }
 func (UnimplementedKoinoniaServiceServer) CreateSpace(context.Context, *CreateSpaceRequest) (*CreateSpaceResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateSpace not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) ImportSpaceFromGit(context.Context, *ImportSpaceFromGitRequest) (*SyncJob, error) {
+	return nil, status.Error(codes.Unimplemented, "method ImportSpaceFromGit not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) GetSyncJob(context.Context, *GetSyncJobRequest) (*SyncJob, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetSyncJob not implemented")
 }
 func (UnimplementedKoinoniaServiceServer) ResolveDisplay(context.Context, *ResolveDisplayRequest) (*ResolveDisplayResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ResolveDisplay not implemented")
@@ -945,6 +981,42 @@ func _KoinoniaService_CreateSpace_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _KoinoniaService_ImportSpaceFromGit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ImportSpaceFromGitRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).ImportSpaceFromGit(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_ImportSpaceFromGit_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).ImportSpaceFromGit(ctx, req.(*ImportSpaceFromGitRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_GetSyncJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSyncJobRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).GetSyncJob(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_GetSyncJob_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).GetSyncJob(ctx, req.(*GetSyncJobRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _KoinoniaService_ResolveDisplay_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ResolveDisplayRequest)
 	if err := dec(in); err != nil {
@@ -1264,6 +1336,14 @@ var KoinoniaService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateSpace",
 			Handler:    _KoinoniaService_CreateSpace_Handler,
+		},
+		{
+			MethodName: "ImportSpaceFromGit",
+			Handler:    _KoinoniaService_ImportSpaceFromGit_Handler,
+		},
+		{
+			MethodName: "GetSyncJob",
+			Handler:    _KoinoniaService_GetSyncJob_Handler,
 		},
 		{
 			MethodName: "ResolveDisplay",

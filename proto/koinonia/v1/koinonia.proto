@@ -48,6 +48,11 @@ service KoinoniaService {
   // caller's owner grant in one transaction. The only path that creates a space.
   rpc CreateSpace(CreateSpaceRequest) returns (CreateSpaceResponse);
 
+  // Git interchange (ADR-0030): import a remote repo into a new space as an async
+  // job; poll the job for progress/result.
+  rpc ImportSpaceFromGit(ImportSpaceFromGitRequest) returns (SyncJob);
+  rpc GetSyncJob(GetSyncJobRequest) returns (SyncJob);
+
   // Section display config (space default merged with the section's frontmatter)
   // and node authorship (byline attribution).
   rpc ResolveDisplay(ResolveDisplayRequest) returns (ResolveDisplayResponse);
@@ -198,6 +203,26 @@ message Checkpoint {
   string name = 1;
   int64 as_of_seq = 2;
   int64 created_at = 3; // unix seconds
+}
+
+message ImportSpaceFromGitRequest {
+  string remote = 1; // git URL (https/file)
+  string ref = 2;    // branch/ref; "" -> the remote's default
+  string slug = 3;   // slug for the new space
+}
+message GetSyncJobRequest {
+  string job_id = 1;
+}
+// SyncJob is the state of an async import/export job.
+message SyncJob {
+  string id = 1;
+  string space_id = 2; // set once the space exists
+  string kind = 3;     // "import" | "export"
+  string state = 4;    // pending|running|succeeded|failed
+  int32 progress = 5;  // 0..100
+  string detail = 6;   // current step
+  string error = 7;    // populated on failure
+  string result = 8;   // space id / repo / PR url
 }
 
 message CreateSpaceRequest {
