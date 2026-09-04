@@ -35,6 +35,7 @@ const (
 	KoinoniaService_ListCheckpoints_FullMethodName      = "/koinonia.v1.KoinoniaService/ListCheckpoints"
 	KoinoniaService_Login_FullMethodName                = "/koinonia.v1.KoinoniaService/Login"
 	KoinoniaService_IssueAgentToken_FullMethodName      = "/koinonia.v1.KoinoniaService/IssueAgentToken"
+	KoinoniaService_IssueRoomToken_FullMethodName       = "/koinonia.v1.KoinoniaService/IssueRoomToken"
 	KoinoniaService_CreateSpace_FullMethodName          = "/koinonia.v1.KoinoniaService/CreateSpace"
 	KoinoniaService_ImportSpaceFromGit_FullMethodName   = "/koinonia.v1.KoinoniaService/ImportSpaceFromGit"
 	KoinoniaService_GetSyncJob_FullMethodName           = "/koinonia.v1.KoinoniaService/GetSyncJob"
@@ -97,6 +98,9 @@ type KoinoniaServiceClient interface {
 	// Identity: obtain a JWT (dev issuer) and delegate an agent sub-token.
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*TokenResponse, error)
 	IssueAgentToken(ctx context.Context, in *IssueAgentTokenRequest, opts ...grpc.CallOption) (*TokenResponse, error)
+	// Co-editing: a short-lived room token scoped to a draft node (contributor+),
+	// verified by the Hocuspocus sidecar's onAuthenticate hook (ADR-0027).
+	IssueRoomToken(ctx context.Context, in *RoomTokenRequest, opts ...grpc.CallOption) (*TokenResponse, error)
 	// Space provisioning (ADR-0029): bootstrap a space, its root node, and the
 	// caller's owner grant in one transaction. The only path that creates a space.
 	CreateSpace(ctx context.Context, in *CreateSpaceRequest, opts ...grpc.CallOption) (*CreateSpaceResponse, error)
@@ -299,6 +303,16 @@ func (c *koinoniaServiceClient) IssueAgentToken(ctx context.Context, in *IssueAg
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(TokenResponse)
 	err := c.cc.Invoke(ctx, KoinoniaService_IssueAgentToken_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) IssueRoomToken(ctx context.Context, in *RoomTokenRequest, opts ...grpc.CallOption) (*TokenResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TokenResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_IssueRoomToken_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -557,6 +571,9 @@ type KoinoniaServiceServer interface {
 	// Identity: obtain a JWT (dev issuer) and delegate an agent sub-token.
 	Login(context.Context, *LoginRequest) (*TokenResponse, error)
 	IssueAgentToken(context.Context, *IssueAgentTokenRequest) (*TokenResponse, error)
+	// Co-editing: a short-lived room token scoped to a draft node (contributor+),
+	// verified by the Hocuspocus sidecar's onAuthenticate hook (ADR-0027).
+	IssueRoomToken(context.Context, *RoomTokenRequest) (*TokenResponse, error)
 	// Space provisioning (ADR-0029): bootstrap a space, its root node, and the
 	// caller's owner grant in one transaction. The only path that creates a space.
 	CreateSpace(context.Context, *CreateSpaceRequest) (*CreateSpaceResponse, error)
@@ -652,6 +669,9 @@ func (UnimplementedKoinoniaServiceServer) Login(context.Context, *LoginRequest) 
 }
 func (UnimplementedKoinoniaServiceServer) IssueAgentToken(context.Context, *IssueAgentTokenRequest) (*TokenResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method IssueAgentToken not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) IssueRoomToken(context.Context, *RoomTokenRequest) (*TokenResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method IssueRoomToken not implemented")
 }
 func (UnimplementedKoinoniaServiceServer) CreateSpace(context.Context, *CreateSpaceRequest) (*CreateSpaceResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateSpace not implemented")
@@ -1018,6 +1038,24 @@ func _KoinoniaService_IssueAgentToken_Handler(srv interface{}, ctx context.Conte
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(KoinoniaServiceServer).IssueAgentToken(ctx, req.(*IssueAgentTokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_IssueRoomToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RoomTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).IssueRoomToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_IssueRoomToken_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).IssueRoomToken(ctx, req.(*RoomTokenRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1434,6 +1472,10 @@ var KoinoniaService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "IssueAgentToken",
 			Handler:    _KoinoniaService_IssueAgentToken_Handler,
+		},
+		{
+			MethodName: "IssueRoomToken",
+			Handler:    _KoinoniaService_IssueRoomToken_Handler,
 		},
 		{
 			MethodName: "CreateSpace",

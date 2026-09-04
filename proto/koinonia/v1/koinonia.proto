@@ -44,6 +44,10 @@ service KoinoniaService {
   rpc Login(LoginRequest) returns (TokenResponse);
   rpc IssueAgentToken(IssueAgentTokenRequest) returns (TokenResponse);
 
+  // Co-editing: a short-lived room token scoped to a draft node (contributor+),
+  // verified by the Hocuspocus sidecar's onAuthenticate hook (ADR-0027).
+  rpc IssueRoomToken(RoomTokenRequest) returns (TokenResponse);
+
   // Space provisioning (ADR-0029): bootstrap a space, its root node, and the
   // caller's owner grant in one transaction. The only path that creates a space.
   rpc CreateSpace(CreateSpaceRequest) returns (CreateSpaceResponse);
@@ -278,6 +282,10 @@ message TokenResponse {
 }
 message IssueAgentTokenRequest {
   string agent = 1; // agent name; the delegating user is the authenticated caller
+}
+message RoomTokenRequest {
+  string draft_id = 1;
+  string logical_id = 2; // the draft node the room edits
 }
 
 message ResolveDisplayRequest {
