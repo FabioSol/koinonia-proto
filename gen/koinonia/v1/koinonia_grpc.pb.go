@@ -38,6 +38,7 @@ const (
 	KoinoniaService_CreateSpace_FullMethodName          = "/koinonia.v1.KoinoniaService/CreateSpace"
 	KoinoniaService_ImportSpaceFromGit_FullMethodName   = "/koinonia.v1.KoinoniaService/ImportSpaceFromGit"
 	KoinoniaService_GetSyncJob_FullMethodName           = "/koinonia.v1.KoinoniaService/GetSyncJob"
+	KoinoniaService_ImportSpaceFromLocal_FullMethodName = "/koinonia.v1.KoinoniaService/ImportSpaceFromLocal"
 	KoinoniaService_ExportSpaceToNewRepo_FullMethodName = "/koinonia.v1.KoinoniaService/ExportSpaceToNewRepo"
 	KoinoniaService_ExportSpaceToOrigin_FullMethodName  = "/koinonia.v1.KoinoniaService/ExportSpaceToOrigin"
 	KoinoniaService_ResolveDisplay_FullMethodName       = "/koinonia.v1.KoinoniaService/ResolveDisplay"
@@ -103,6 +104,9 @@ type KoinoniaServiceClient interface {
 	// job; poll the job for progress/result.
 	ImportSpaceFromGit(ctx context.Context, in *ImportSpaceFromGitRequest, opts ...grpc.CallOption) (*SyncJob, error)
 	GetSyncJob(ctx context.Context, in *GetSyncJobRequest, opts ...grpc.CallOption) (*SyncJob, error)
+	// Client-streamed import: the CLI reads a LOCAL folder/repo and streams its
+	// commits + files (no server disk access), server replays via the same core.
+	ImportSpaceFromLocal(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[ImportSpaceFromLocalRequest, SyncJob], error)
 	// Export a space's main tree to a new/empty repo as the initial commit (editor+).
 	ExportSpaceToNewRepo(ctx context.Context, in *ExportToNewRepoRequest, opts ...grpc.CallOption) (*SyncJob, error)
 	// Export the diff since last sync back to the linked origin as a branch + PR.
@@ -331,6 +335,19 @@ func (c *koinoniaServiceClient) GetSyncJob(ctx context.Context, in *GetSyncJobRe
 	return out, nil
 }
 
+func (c *koinoniaServiceClient) ImportSpaceFromLocal(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[ImportSpaceFromLocalRequest, SyncJob], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &KoinoniaService_ServiceDesc.Streams[0], KoinoniaService_ImportSpaceFromLocal_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[ImportSpaceFromLocalRequest, SyncJob]{ClientStream: stream}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type KoinoniaService_ImportSpaceFromLocalClient = grpc.ClientStreamingClient[ImportSpaceFromLocalRequest, SyncJob]
+
 func (c *koinoniaServiceClient) ExportSpaceToNewRepo(ctx context.Context, in *ExportToNewRepoRequest, opts ...grpc.CallOption) (*SyncJob, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(SyncJob)
@@ -483,7 +500,7 @@ func (c *koinoniaServiceClient) ResolveEmbed(ctx context.Context, in *ResolveEmb
 
 func (c *koinoniaServiceClient) Subscribe(ctx context.Context, in *SubscribeRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Invalidation], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &KoinoniaService_ServiceDesc.Streams[0], KoinoniaService_Subscribe_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &KoinoniaService_ServiceDesc.Streams[1], KoinoniaService_Subscribe_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -547,6 +564,9 @@ type KoinoniaServiceServer interface {
 	// job; poll the job for progress/result.
 	ImportSpaceFromGit(context.Context, *ImportSpaceFromGitRequest) (*SyncJob, error)
 	GetSyncJob(context.Context, *GetSyncJobRequest) (*SyncJob, error)
+	// Client-streamed import: the CLI reads a LOCAL folder/repo and streams its
+	// commits + files (no server disk access), server replays via the same core.
+	ImportSpaceFromLocal(grpc.ClientStreamingServer[ImportSpaceFromLocalRequest, SyncJob]) error
 	// Export a space's main tree to a new/empty repo as the initial commit (editor+).
 	ExportSpaceToNewRepo(context.Context, *ExportToNewRepoRequest) (*SyncJob, error)
 	// Export the diff since last sync back to the linked origin as a branch + PR.
@@ -641,6 +661,9 @@ func (UnimplementedKoinoniaServiceServer) ImportSpaceFromGit(context.Context, *I
 }
 func (UnimplementedKoinoniaServiceServer) GetSyncJob(context.Context, *GetSyncJobRequest) (*SyncJob, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetSyncJob not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) ImportSpaceFromLocal(grpc.ClientStreamingServer[ImportSpaceFromLocalRequest, SyncJob]) error {
+	return status.Error(codes.Unimplemented, "method ImportSpaceFromLocal not implemented")
 }
 func (UnimplementedKoinoniaServiceServer) ExportSpaceToNewRepo(context.Context, *ExportToNewRepoRequest) (*SyncJob, error) {
 	return nil, status.Error(codes.Unimplemented, "method ExportSpaceToNewRepo not implemented")
@@ -1052,6 +1075,13 @@ func _KoinoniaService_GetSyncJob_Handler(srv interface{}, ctx context.Context, d
 	}
 	return interceptor(ctx, in, info, handler)
 }
+
+func _KoinoniaService_ImportSpaceFromLocal_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(KoinoniaServiceServer).ImportSpaceFromLocal(&grpc.GenericServerStream[ImportSpaceFromLocalRequest, SyncJob]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type KoinoniaService_ImportSpaceFromLocalServer = grpc.ClientStreamingServer[ImportSpaceFromLocalRequest, SyncJob]
 
 func _KoinoniaService_ExportSpaceToNewRepo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ExportToNewRepoRequest)
@@ -1479,6 +1509,11 @@ var KoinoniaService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "ImportSpaceFromLocal",
+			Handler:       _KoinoniaService_ImportSpaceFromLocal_Handler,
+			ClientStreams: true,
+		},
 		{
 			StreamName:    "Subscribe",
 			Handler:       _KoinoniaService_Subscribe_Handler,

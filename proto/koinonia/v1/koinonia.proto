@@ -52,6 +52,9 @@ service KoinoniaService {
   // job; poll the job for progress/result.
   rpc ImportSpaceFromGit(ImportSpaceFromGitRequest) returns (SyncJob);
   rpc GetSyncJob(GetSyncJobRequest) returns (SyncJob);
+  // Client-streamed import: the CLI reads a LOCAL folder/repo and streams its
+  // commits + files (no server disk access), server replays via the same core.
+  rpc ImportSpaceFromLocal(stream ImportSpaceFromLocalRequest) returns (SyncJob);
   // Export a space's main tree to a new/empty repo as the initial commit (editor+).
   rpc ExportSpaceToNewRepo(ExportToNewRepoRequest) returns (SyncJob);
   // Export the diff since last sync back to the linked origin as a branch + PR.
@@ -216,6 +219,27 @@ message ImportSpaceFromGitRequest {
 }
 message GetSyncJobRequest {
   string job_id = 1;
+}
+// ImportSpaceFromLocalRequest is one streamed message: a start header, a commit
+// header (begins a commit's tree), or a file within the current commit's tree.
+message ImportSpaceFromLocalRequest {
+  oneof payload {
+    ImportStart start = 1;
+    ImportCommitMeta commit = 2;
+    ImportFile file = 3;
+  }
+}
+message ImportStart {
+  string slug = 1; // slug for the new space
+}
+message ImportCommitMeta {
+  string author = 1;
+  string message = 2;
+  int64 when_unix = 3;
+}
+message ImportFile {
+  string path = 1;    // repo-relative, "/"-separated
+  bytes content = 2;
 }
 message ExportToNewRepoRequest {
   string space_id = 1;
