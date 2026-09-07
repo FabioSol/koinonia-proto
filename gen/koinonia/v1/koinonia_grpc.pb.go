@@ -42,6 +42,8 @@ const (
 	KoinoniaService_ImportSpaceFromLocal_FullMethodName = "/koinonia.v1.KoinoniaService/ImportSpaceFromLocal"
 	KoinoniaService_ExportSpaceToNewRepo_FullMethodName = "/koinonia.v1.KoinoniaService/ExportSpaceToNewRepo"
 	KoinoniaService_ExportSpaceToOrigin_FullMethodName  = "/koinonia.v1.KoinoniaService/ExportSpaceToOrigin"
+	KoinoniaService_CreateDocExport_FullMethodName      = "/koinonia.v1.KoinoniaService/CreateDocExport"
+	KoinoniaService_GetDocExport_FullMethodName         = "/koinonia.v1.KoinoniaService/GetDocExport"
 	KoinoniaService_ResolveDisplay_FullMethodName       = "/koinonia.v1.KoinoniaService/ResolveDisplay"
 	KoinoniaService_SetNodeAuthors_FullMethodName       = "/koinonia.v1.KoinoniaService/SetNodeAuthors"
 	KoinoniaService_GetNodeAuthors_FullMethodName       = "/koinonia.v1.KoinoniaService/GetNodeAuthors"
@@ -115,6 +117,11 @@ type KoinoniaServiceClient interface {
 	ExportSpaceToNewRepo(ctx context.Context, in *ExportToNewRepoRequest, opts ...grpc.CallOption) (*SyncJob, error)
 	// Export the diff since last sync back to the linked origin as a branch + PR.
 	ExportSpaceToOrigin(ctx context.Context, in *ExportToOriginRequest, opts ...grpc.CallOption) (*SyncJob, error)
+	// Document export (ADR-0025): render a subtree to PDF (goldmark→HTML→PDF, display
+	// -config aware) or bundle it as a ZIP of blobs at their paths. Runs as an async
+	// job (result stored in S3); poll GetDocExport for progress + a signed download URL.
+	CreateDocExport(ctx context.Context, in *CreateDocExportRequest, opts ...grpc.CallOption) (*DocExportJob, error)
+	GetDocExport(ctx context.Context, in *GetDocExportRequest, opts ...grpc.CallOption) (*DocExportJob, error)
 	// Section display config (space default merged with the section's frontmatter)
 	// and node authorship (byline attribution).
 	ResolveDisplay(ctx context.Context, in *ResolveDisplayRequest, opts ...grpc.CallOption) (*ResolveDisplayResponse, error)
@@ -382,6 +389,26 @@ func (c *koinoniaServiceClient) ExportSpaceToOrigin(ctx context.Context, in *Exp
 	return out, nil
 }
 
+func (c *koinoniaServiceClient) CreateDocExport(ctx context.Context, in *CreateDocExportRequest, opts ...grpc.CallOption) (*DocExportJob, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DocExportJob)
+	err := c.cc.Invoke(ctx, KoinoniaService_CreateDocExport_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) GetDocExport(ctx context.Context, in *GetDocExportRequest, opts ...grpc.CallOption) (*DocExportJob, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DocExportJob)
+	err := c.cc.Invoke(ctx, KoinoniaService_GetDocExport_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *koinoniaServiceClient) ResolveDisplay(ctx context.Context, in *ResolveDisplayRequest, opts ...grpc.CallOption) (*ResolveDisplayResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ResolveDisplayResponse)
@@ -588,6 +615,11 @@ type KoinoniaServiceServer interface {
 	ExportSpaceToNewRepo(context.Context, *ExportToNewRepoRequest) (*SyncJob, error)
 	// Export the diff since last sync back to the linked origin as a branch + PR.
 	ExportSpaceToOrigin(context.Context, *ExportToOriginRequest) (*SyncJob, error)
+	// Document export (ADR-0025): render a subtree to PDF (goldmark→HTML→PDF, display
+	// -config aware) or bundle it as a ZIP of blobs at their paths. Runs as an async
+	// job (result stored in S3); poll GetDocExport for progress + a signed download URL.
+	CreateDocExport(context.Context, *CreateDocExportRequest) (*DocExportJob, error)
+	GetDocExport(context.Context, *GetDocExportRequest) (*DocExportJob, error)
 	// Section display config (space default merged with the section's frontmatter)
 	// and node authorship (byline attribution).
 	ResolveDisplay(context.Context, *ResolveDisplayRequest) (*ResolveDisplayResponse, error)
@@ -690,6 +722,12 @@ func (UnimplementedKoinoniaServiceServer) ExportSpaceToNewRepo(context.Context, 
 }
 func (UnimplementedKoinoniaServiceServer) ExportSpaceToOrigin(context.Context, *ExportToOriginRequest) (*SyncJob, error) {
 	return nil, status.Error(codes.Unimplemented, "method ExportSpaceToOrigin not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) CreateDocExport(context.Context, *CreateDocExportRequest) (*DocExportJob, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateDocExport not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) GetDocExport(context.Context, *GetDocExportRequest) (*DocExportJob, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetDocExport not implemented")
 }
 func (UnimplementedKoinoniaServiceServer) ResolveDisplay(context.Context, *ResolveDisplayRequest) (*ResolveDisplayResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ResolveDisplay not implemented")
@@ -1157,6 +1195,42 @@ func _KoinoniaService_ExportSpaceToOrigin_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _KoinoniaService_CreateDocExport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateDocExportRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).CreateDocExport(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_CreateDocExport_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).CreateDocExport(ctx, req.(*CreateDocExportRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_GetDocExport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDocExportRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).GetDocExport(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_GetDocExport_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).GetDocExport(ctx, req.(*GetDocExportRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _KoinoniaService_ResolveDisplay_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ResolveDisplayRequest)
 	if err := dec(in); err != nil {
@@ -1496,6 +1570,14 @@ var KoinoniaService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ExportSpaceToOrigin",
 			Handler:    _KoinoniaService_ExportSpaceToOrigin_Handler,
+		},
+		{
+			MethodName: "CreateDocExport",
+			Handler:    _KoinoniaService_CreateDocExport_Handler,
+		},
+		{
+			MethodName: "GetDocExport",
+			Handler:    _KoinoniaService_GetDocExport_Handler,
 		},
 		{
 			MethodName: "ResolveDisplay",

@@ -64,6 +64,12 @@ service KoinoniaService {
   // Export the diff since last sync back to the linked origin as a branch + PR.
   rpc ExportSpaceToOrigin(ExportToOriginRequest) returns (SyncJob);
 
+  // Document export (ADR-0025): render a subtree to PDF (goldmark→HTML→PDF, display
+  // -config aware) or bundle it as a ZIP of blobs at their paths. Runs as an async
+  // job (result stored in S3); poll GetDocExport for progress + a signed download URL.
+  rpc CreateDocExport(CreateDocExportRequest) returns (DocExportJob);
+  rpc GetDocExport(GetDocExportRequest) returns (DocExportJob);
+
   // Section display config (space default merged with the section's frontmatter)
   // and node authorship (byline attribution).
   rpc ResolveDisplay(ResolveDisplayRequest) returns (ResolveDisplayResponse);
@@ -262,6 +268,28 @@ message SyncJob {
   string detail = 6;   // current step
   string error = 7;    // populated on failure
   string result = 8;   // space id / repo / PR url
+}
+
+// Document export (ADR-0025): PDF of an article/section, or ZIP of a subtree.
+message CreateDocExportRequest {
+  string space_id = 1;     // space the subtree belongs to (RBAC scope)
+  string root_logical = 2; // subtree root; empty => the whole space
+  string format = 3;       // "pdf" | "zip"
+}
+message GetDocExportRequest {
+  string id = 1;
+}
+// DocExportJob is the state of an async PDF/ZIP export job.
+message DocExportJob {
+  string id = 1;
+  string space_id = 2;
+  string format = 3;       // "pdf" | "zip"
+  string state = 4;        // pending|running|succeeded|failed
+  int32 progress = 5;      // 0..100
+  string detail = 6;       // current step
+  string error = 7;        // populated on failure
+  string download_url = 8; // short-lived signed S3 URL (succeeded only)
+  int64 url_expires = 9;   // unix expiry of download_url
 }
 
 message CreateSpaceRequest {
