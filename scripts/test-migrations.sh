@@ -87,6 +87,15 @@ psql_c < "$MIG_DIR/000014_export_jobs.up.sql"
 psql_c -tAc "SELECT 1 FROM information_schema.tables WHERE table_name='export_jobs'" | grep -q 1 \
   && echo "  ✓ export_jobs" || { echo "  ✗ export_jobs missing"; exit 1; }
 
+echo "apply 000015_tenancy_tracer.up.sql…"
+psql_c < "$MIG_DIR/000015_tenancy_tracer.up.sql"
+psql_c -tAc "SELECT 1 FROM information_schema.columns WHERE table_name='nodes' AND column_name='tenant_id'" | grep -q 1 \
+  && echo "  ✓ nodes.tenant_id" || { echo "  ✗ nodes.tenant_id missing"; exit 1; }
+psql_c -tAc "SELECT 1 FROM pg_policies WHERE tablename='nodes' AND policyname='tenant_isolation'" | grep -q 1 \
+  && echo "  ✓ nodes RLS policy" || { echo "  ✗ nodes RLS policy missing"; exit 1; }
+psql_c -tAc "SELECT 1 FROM pg_roles WHERE rolname='koinonia_app'" | grep -q 1 \
+  && echo "  ✓ koinonia_app role" || { echo "  ✗ koinonia_app role missing"; exit 1; }
+
 echo "assert duplicate MAIN siblings rejected (NULLS NOT DISTINCT)…"
 psql_c -c "INSERT INTO spaces (id, slug) VALUES ('00000000-0000-0000-0000-0000000000aa','t');" >/dev/null
 psql_c -c "INSERT INTO nodes (logical_id, space_id, name, kind) VALUES (gen_random_uuid(),'00000000-0000-0000-0000-0000000000aa','dup','article');" >/dev/null
@@ -103,6 +112,7 @@ COUNT=$(psql_c -tAc "SELECT count(*) FROM nodes WHERE space_id='00000000-0000-00
 
 echo "apply down migrations (round-trip)…"
 psql_c < "$MIG_DIR/000002_dev_seed.down.sql"
+psql_c < "$MIG_DIR/000015_tenancy_tracer.down.sql"
 psql_c < "$MIG_DIR/000014_export_jobs.down.sql"
 psql_c < "$MIG_DIR/000013_coedit_locks.down.sql"
 psql_c < "$MIG_DIR/000012_y_updates.down.sql"
@@ -117,5 +127,15 @@ psql_c < "$MIG_DIR/000004_checkpoints.down.sql"
 psql_c < "$MIG_DIR/000003_node_history.down.sql"
 psql_c < "$MIG_DIR/000001_init.down.sql"
 psql_c -tAc "SELECT 1 FROM information_schema.tables WHERE table_name='nodes'" | grep -q 1 && { echo "  ✗ nodes table still present after down"; exit 1; } || echo "  ✓ schema dropped cleanly"
+
+# Control-plane schema (separate database in production; applied here to the now-empty db).
+CTL_DIR="$(cd "$MIG_DIR/../migrations-control" && pwd)"
+echo "apply control-plane 000001_control.up.sql…"
+psql_c < "$CTL_DIR/000001_control.up.sql"
+psql_c -tAc "SELECT 1 FROM information_schema.tables WHERE table_name='owners'" | grep -q 1 \
+  && echo "  ✓ control owners/shards/users" || { echo "  ✗ control schema missing"; exit 1; }
+psql_c < "$CTL_DIR/000001_control.down.sql"
+psql_c -tAc "SELECT 1 FROM information_schema.tables WHERE table_name='owners'" | grep -q 1 \
+  && { echo "  ✗ control owners still present after down"; exit 1; } || echo "  ✓ control schema dropped cleanly"
 
 echo "ALL MIGRATION CHECKS PASSED"
