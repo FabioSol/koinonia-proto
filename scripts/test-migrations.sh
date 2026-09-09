@@ -96,6 +96,13 @@ psql_c -tAc "SELECT 1 FROM pg_policies WHERE tablename='nodes' AND policyname='t
 psql_c -tAc "SELECT 1 FROM pg_roles WHERE rolname='koinonia_app'" | grep -q 1 \
   && echo "  ✓ koinonia_app role" || { echo "  ✗ koinonia_app role missing"; exit 1; }
 
+echo "apply 000016_tenancy_sweep.up.sql…"
+psql_c < "$MIG_DIR/000016_tenancy_sweep.up.sql"
+psql_c -tAc "SELECT count(*) FROM pg_policies WHERE policyname='tenant_isolation'" | grep -qx 18 \
+  && echo "  ✓ RLS on 18 tenant tables" || { echo "  ✗ expected 18 tenant_isolation policies, got $(psql_c -tAc "SELECT count(*) FROM pg_policies WHERE policyname='tenant_isolation'")"; exit 1; }
+psql_c -tAc "SELECT count(*) FROM information_schema.columns WHERE column_name='tenant_id' AND table_schema='public'" | grep -qx 18 \
+  && echo "  ✓ tenant_id on 18 tables" || { echo "  ✗ expected 18 tenant_id columns"; exit 1; }
+
 echo "assert duplicate MAIN siblings rejected (NULLS NOT DISTINCT)…"
 psql_c -c "INSERT INTO spaces (id, slug) VALUES ('00000000-0000-0000-0000-0000000000aa','t');" >/dev/null
 psql_c -c "INSERT INTO nodes (logical_id, space_id, name, kind) VALUES (gen_random_uuid(),'00000000-0000-0000-0000-0000000000aa','dup','article');" >/dev/null
@@ -112,6 +119,7 @@ COUNT=$(psql_c -tAc "SELECT count(*) FROM nodes WHERE space_id='00000000-0000-00
 
 echo "apply down migrations (round-trip)…"
 psql_c < "$MIG_DIR/000002_dev_seed.down.sql"
+psql_c < "$MIG_DIR/000016_tenancy_sweep.down.sql"
 psql_c < "$MIG_DIR/000015_tenancy_tracer.down.sql"
 psql_c < "$MIG_DIR/000014_export_jobs.down.sql"
 psql_c < "$MIG_DIR/000013_coedit_locks.down.sql"
