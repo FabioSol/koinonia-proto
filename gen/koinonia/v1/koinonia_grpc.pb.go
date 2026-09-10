@@ -35,6 +35,10 @@ const (
 	KoinoniaService_ListCheckpoints_FullMethodName      = "/koinonia.v1.KoinoniaService/ListCheckpoints"
 	KoinoniaService_Login_FullMethodName                = "/koinonia.v1.KoinoniaService/Login"
 	KoinoniaService_IssueAgentToken_FullMethodName      = "/koinonia.v1.KoinoniaService/IssueAgentToken"
+	KoinoniaService_RegisterLocal_FullMethodName        = "/koinonia.v1.KoinoniaService/RegisterLocal"
+	KoinoniaService_LocalLogin_FullMethodName           = "/koinonia.v1.KoinoniaService/LocalLogin"
+	KoinoniaService_ExchangeSession_FullMethodName      = "/koinonia.v1.KoinoniaService/ExchangeSession"
+	KoinoniaService_Logout_FullMethodName               = "/koinonia.v1.KoinoniaService/Logout"
 	KoinoniaService_IssueRoomToken_FullMethodName       = "/koinonia.v1.KoinoniaService/IssueRoomToken"
 	KoinoniaService_CreateSpace_FullMethodName          = "/koinonia.v1.KoinoniaService/CreateSpace"
 	KoinoniaService_ImportSpaceFromGit_FullMethodName   = "/koinonia.v1.KoinoniaService/ImportSpaceFromGit"
@@ -100,6 +104,16 @@ type KoinoniaServiceClient interface {
 	// Identity: obtain a JWT (dev issuer) and delegate an agent sub-token.
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*TokenResponse, error)
 	IssueAgentToken(ctx context.Context, in *IssueAgentTokenRequest, opts ...grpc.CallOption) (*TokenResponse, error)
+	// Local email+password identity (ADR-0032, S45).
+	// Register creates a user account + personal owner (slug == handle).
+	RegisterLocal(ctx context.Context, in *RegisterLocalRequest, opts ...grpc.CallOption) (*RegisterLocalResponse, error)
+	// LocalLogin verifies credentials and establishes a server-side session.
+	// Returns an opaque session token; the web shell sets it as an HttpOnly cookie.
+	LocalLogin(ctx context.Context, in *LocalLoginRequest, opts ...grpc.CallOption) (*TokenResponse, error)
+	// ExchangeSession validates a session cookie and mints a short-lived access token.
+	ExchangeSession(ctx context.Context, in *ExchangeSessionRequest, opts ...grpc.CallOption) (*TokenResponse, error)
+	// Logout revokes a session immediately (cookie is honoured no further).
+	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutResponse, error)
 	// Co-editing: a short-lived room token scoped to a draft node (contributor+),
 	// verified by the Hocuspocus sidecar's onAuthenticate hook (ADR-0027).
 	IssueRoomToken(ctx context.Context, in *RoomTokenRequest, opts ...grpc.CallOption) (*TokenResponse, error)
@@ -310,6 +324,46 @@ func (c *koinoniaServiceClient) IssueAgentToken(ctx context.Context, in *IssueAg
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(TokenResponse)
 	err := c.cc.Invoke(ctx, KoinoniaService_IssueAgentToken_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) RegisterLocal(ctx context.Context, in *RegisterLocalRequest, opts ...grpc.CallOption) (*RegisterLocalResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RegisterLocalResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_RegisterLocal_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) LocalLogin(ctx context.Context, in *LocalLoginRequest, opts ...grpc.CallOption) (*TokenResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TokenResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_LocalLogin_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) ExchangeSession(ctx context.Context, in *ExchangeSessionRequest, opts ...grpc.CallOption) (*TokenResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TokenResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_ExchangeSession_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LogoutResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_Logout_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -598,6 +652,16 @@ type KoinoniaServiceServer interface {
 	// Identity: obtain a JWT (dev issuer) and delegate an agent sub-token.
 	Login(context.Context, *LoginRequest) (*TokenResponse, error)
 	IssueAgentToken(context.Context, *IssueAgentTokenRequest) (*TokenResponse, error)
+	// Local email+password identity (ADR-0032, S45).
+	// Register creates a user account + personal owner (slug == handle).
+	RegisterLocal(context.Context, *RegisterLocalRequest) (*RegisterLocalResponse, error)
+	// LocalLogin verifies credentials and establishes a server-side session.
+	// Returns an opaque session token; the web shell sets it as an HttpOnly cookie.
+	LocalLogin(context.Context, *LocalLoginRequest) (*TokenResponse, error)
+	// ExchangeSession validates a session cookie and mints a short-lived access token.
+	ExchangeSession(context.Context, *ExchangeSessionRequest) (*TokenResponse, error)
+	// Logout revokes a session immediately (cookie is honoured no further).
+	Logout(context.Context, *LogoutRequest) (*LogoutResponse, error)
 	// Co-editing: a short-lived room token scoped to a draft node (contributor+),
 	// verified by the Hocuspocus sidecar's onAuthenticate hook (ADR-0027).
 	IssueRoomToken(context.Context, *RoomTokenRequest) (*TokenResponse, error)
@@ -701,6 +765,18 @@ func (UnimplementedKoinoniaServiceServer) Login(context.Context, *LoginRequest) 
 }
 func (UnimplementedKoinoniaServiceServer) IssueAgentToken(context.Context, *IssueAgentTokenRequest) (*TokenResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method IssueAgentToken not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) RegisterLocal(context.Context, *RegisterLocalRequest) (*RegisterLocalResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RegisterLocal not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) LocalLogin(context.Context, *LocalLoginRequest) (*TokenResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method LocalLogin not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) ExchangeSession(context.Context, *ExchangeSessionRequest) (*TokenResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ExchangeSession not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) Logout(context.Context, *LogoutRequest) (*LogoutResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method Logout not implemented")
 }
 func (UnimplementedKoinoniaServiceServer) IssueRoomToken(context.Context, *RoomTokenRequest) (*TokenResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method IssueRoomToken not implemented")
@@ -1076,6 +1152,78 @@ func _KoinoniaService_IssueAgentToken_Handler(srv interface{}, ctx context.Conte
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(KoinoniaServiceServer).IssueAgentToken(ctx, req.(*IssueAgentTokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_RegisterLocal_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterLocalRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).RegisterLocal(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_RegisterLocal_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).RegisterLocal(ctx, req.(*RegisterLocalRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_LocalLogin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LocalLoginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).LocalLogin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_LocalLogin_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).LocalLogin(ctx, req.(*LocalLoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_ExchangeSession_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExchangeSessionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).ExchangeSession(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_ExchangeSession_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).ExchangeSession(ctx, req.(*ExchangeSessionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_Logout_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LogoutRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).Logout(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_Logout_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).Logout(ctx, req.(*LogoutRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1546,6 +1694,22 @@ var KoinoniaService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "IssueAgentToken",
 			Handler:    _KoinoniaService_IssueAgentToken_Handler,
+		},
+		{
+			MethodName: "RegisterLocal",
+			Handler:    _KoinoniaService_RegisterLocal_Handler,
+		},
+		{
+			MethodName: "LocalLogin",
+			Handler:    _KoinoniaService_LocalLogin_Handler,
+		},
+		{
+			MethodName: "ExchangeSession",
+			Handler:    _KoinoniaService_ExchangeSession_Handler,
+		},
+		{
+			MethodName: "Logout",
+			Handler:    _KoinoniaService_Logout_Handler,
 		},
 		{
 			MethodName: "IssueRoomToken",
