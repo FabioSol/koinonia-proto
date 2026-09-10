@@ -22,6 +22,7 @@ jobs:
           version: 1.72.0
           github_token: ${{ github.token }} # authenticated download (avoids rate limits)
       - run: buf lint
+      - run: git fetch origin main:main || true
       - run: buf breaking --against '.git#branch=main'
       - name: generated code is up to date
         run: |
