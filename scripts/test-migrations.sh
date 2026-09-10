@@ -142,6 +142,26 @@ echo "apply control-plane 000001_control.up.sql…"
 psql_c < "$CTL_DIR/000001_control.up.sql"
 psql_c -tAc "SELECT 1 FROM information_schema.tables WHERE table_name='owners'" | grep -q 1 \
   && echo "  ✓ control owners/shards/users" || { echo "  ✗ control schema missing"; exit 1; }
+
+echo "apply control-plane 000002_space_registry.up.sql…"
+psql_c < "$CTL_DIR/000002_space_registry.up.sql"
+psql_c -tAc "SELECT 1 FROM information_schema.tables WHERE table_name='space_registry'" | grep -q 1 \
+  && echo "  ✓ control space_registry" || { echo "  ✗ control space_registry missing"; exit 1; }
+
+echo "apply control-plane 000003_auth_identities.up.sql…"
+psql_c < "$CTL_DIR/000003_auth_identities.up.sql"
+psql_c -tAc "SELECT 1 FROM information_schema.tables WHERE table_name='auth_identities'" | grep -q 1 \
+  && echo "  ✓ auth_identities" || { echo "  ✗ auth_identities missing"; exit 1; }
+psql_c -tAc "SELECT 1 FROM information_schema.tables WHERE table_name='sessions'" | grep -q 1 \
+  && echo "  ✓ sessions" || { echo "  ✗ sessions missing"; exit 1; }
+psql_c -tAc "SELECT 1 FROM pg_indexes WHERE indexname='sessions_active'" | grep -q 1 \
+  && echo "  ✓ sessions_active index" || { echo "  ✗ sessions_active index missing"; exit 1; }
+
+echo "apply control-plane down migrations (round-trip)…"
+psql_c < "$CTL_DIR/000003_auth_identities.down.sql"
+psql_c -tAc "SELECT 1 FROM information_schema.tables WHERE table_name='sessions'" | grep -q 1 \
+  && { echo "  ✗ sessions still present after down"; exit 1; } || echo "  ✓ 000003 down clean"
+psql_c < "$CTL_DIR/000002_space_registry.down.sql"
 psql_c < "$CTL_DIR/000001_control.down.sql"
 psql_c -tAc "SELECT 1 FROM information_schema.tables WHERE table_name='owners'" | grep -q 1 \
   && { echo "  ✗ control owners still present after down"; exit 1; } || echo "  ✓ control schema dropped cleanly"

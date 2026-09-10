@@ -44,6 +44,17 @@ service KoinoniaService {
   rpc Login(LoginRequest) returns (TokenResponse);
   rpc IssueAgentToken(IssueAgentTokenRequest) returns (TokenResponse);
 
+  // Local email+password identity (ADR-0032, S45).
+  // Register creates a user account + personal owner (slug == handle).
+  rpc RegisterLocal(RegisterLocalRequest) returns (RegisterLocalResponse);
+  // LocalLogin verifies credentials and establishes a server-side session.
+  // Returns an opaque session token; the web shell sets it as an HttpOnly cookie.
+  rpc LocalLogin(LocalLoginRequest) returns (TokenResponse);
+  // ExchangeSession validates a session cookie and mints a short-lived access token.
+  rpc ExchangeSession(ExchangeSessionRequest) returns (TokenResponse);
+  // Logout revokes a session immediately (cookie is honoured no further).
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+
   // Co-editing: a short-lived room token scoped to a draft node (contributor+),
   // verified by the Hocuspocus sidecar's onAuthenticate hook (ADR-0027).
   rpc IssueRoomToken(RoomTokenRequest) returns (TokenResponse);
@@ -463,3 +474,30 @@ message Invalidation {
   string draft_id = 3;
   string parent_id = 4;
 }
+
+// Local auth messages (ADR-0032, S45).
+message RegisterLocalRequest {
+  string email = 1;
+  string handle = 2;   // becomes the personal owner slug (unique)
+  string password = 3;
+}
+message RegisterLocalResponse {}
+
+message LocalLoginRequest {
+  string email = 1;
+  string password = 2;
+}
+// LocalLogin returns a TokenResponse where token is the opaque session token
+// (not a JWT); the web shell sets it as an HttpOnly cookie and exchanges it
+// per-request via ExchangeSession.
+
+message ExchangeSessionRequest {
+  string session_token = 1;
+}
+// ExchangeSession returns a TokenResponse where token is a short-lived JWT
+// (~15m) suitable for bearer auth on gRPC calls.
+
+message LogoutRequest {
+  string session_token = 1;
+}
+message LogoutResponse {}
