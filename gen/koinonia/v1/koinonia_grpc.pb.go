@@ -67,6 +67,12 @@ const (
 	KoinoniaService_RevokeEmbed_FullMethodName          = "/koinonia.v1.KoinoniaService/RevokeEmbed"
 	KoinoniaService_ResolveEmbed_FullMethodName         = "/koinonia.v1.KoinoniaService/ResolveEmbed"
 	KoinoniaService_Subscribe_FullMethodName            = "/koinonia.v1.KoinoniaService/Subscribe"
+	KoinoniaService_CreateTeam_FullMethodName           = "/koinonia.v1.KoinoniaService/CreateTeam"
+	KoinoniaService_DeleteTeam_FullMethodName           = "/koinonia.v1.KoinoniaService/DeleteTeam"
+	KoinoniaService_AddTeamMember_FullMethodName        = "/koinonia.v1.KoinoniaService/AddTeamMember"
+	KoinoniaService_RemoveTeamMember_FullMethodName     = "/koinonia.v1.KoinoniaService/RemoveTeamMember"
+	KoinoniaService_GrantSpaceRole_FullMethodName       = "/koinonia.v1.KoinoniaService/GrantSpaceRole"
+	KoinoniaService_RevokeSpaceRole_FullMethodName      = "/koinonia.v1.KoinoniaService/RevokeSpaceRole"
 )
 
 // KoinoniaServiceClient is the client API for KoinoniaService service.
@@ -172,6 +178,14 @@ type KoinoniaServiceClient interface {
 	ResolveEmbed(ctx context.Context, in *ResolveEmbedRequest, opts ...grpc.CallOption) (*ResolveEmbedResponse, error)
 	// Real-time cache invalidation (thin deltas, no content).
 	Subscribe(ctx context.Context, in *SubscribeRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Invalidation], error)
+	// Teams + outside collaborators (ADR-0034, S49): tenant-managed groups of CP
+	// users granted a fixed role on a space, plus direct per-user grants.
+	CreateTeam(ctx context.Context, in *CreateTeamRequest, opts ...grpc.CallOption) (*CreateTeamResponse, error)
+	DeleteTeam(ctx context.Context, in *DeleteTeamRequest, opts ...grpc.CallOption) (*DeleteTeamResponse, error)
+	AddTeamMember(ctx context.Context, in *AddTeamMemberRequest, opts ...grpc.CallOption) (*AddTeamMemberResponse, error)
+	RemoveTeamMember(ctx context.Context, in *RemoveTeamMemberRequest, opts ...grpc.CallOption) (*RemoveTeamMemberResponse, error)
+	GrantSpaceRole(ctx context.Context, in *GrantSpaceRoleRequest, opts ...grpc.CallOption) (*GrantSpaceRoleResponse, error)
+	RevokeSpaceRole(ctx context.Context, in *RevokeSpaceRoleRequest, opts ...grpc.CallOption) (*RevokeSpaceRoleResponse, error)
 }
 
 type koinoniaServiceClient struct {
@@ -674,6 +688,66 @@ func (c *koinoniaServiceClient) Subscribe(ctx context.Context, in *SubscribeRequ
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type KoinoniaService_SubscribeClient = grpc.ServerStreamingClient[Invalidation]
 
+func (c *koinoniaServiceClient) CreateTeam(ctx context.Context, in *CreateTeamRequest, opts ...grpc.CallOption) (*CreateTeamResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateTeamResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_CreateTeam_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) DeleteTeam(ctx context.Context, in *DeleteTeamRequest, opts ...grpc.CallOption) (*DeleteTeamResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteTeamResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_DeleteTeam_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) AddTeamMember(ctx context.Context, in *AddTeamMemberRequest, opts ...grpc.CallOption) (*AddTeamMemberResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AddTeamMemberResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_AddTeamMember_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) RemoveTeamMember(ctx context.Context, in *RemoveTeamMemberRequest, opts ...grpc.CallOption) (*RemoveTeamMemberResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RemoveTeamMemberResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_RemoveTeamMember_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) GrantSpaceRole(ctx context.Context, in *GrantSpaceRoleRequest, opts ...grpc.CallOption) (*GrantSpaceRoleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GrantSpaceRoleResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_GrantSpaceRole_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) RevokeSpaceRole(ctx context.Context, in *RevokeSpaceRoleRequest, opts ...grpc.CallOption) (*RevokeSpaceRoleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RevokeSpaceRoleResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_RevokeSpaceRole_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // KoinoniaServiceServer is the server API for KoinoniaService service.
 // All implementations must embed UnimplementedKoinoniaServiceServer
 // for forward compatibility.
@@ -777,6 +851,14 @@ type KoinoniaServiceServer interface {
 	ResolveEmbed(context.Context, *ResolveEmbedRequest) (*ResolveEmbedResponse, error)
 	// Real-time cache invalidation (thin deltas, no content).
 	Subscribe(*SubscribeRequest, grpc.ServerStreamingServer[Invalidation]) error
+	// Teams + outside collaborators (ADR-0034, S49): tenant-managed groups of CP
+	// users granted a fixed role on a space, plus direct per-user grants.
+	CreateTeam(context.Context, *CreateTeamRequest) (*CreateTeamResponse, error)
+	DeleteTeam(context.Context, *DeleteTeamRequest) (*DeleteTeamResponse, error)
+	AddTeamMember(context.Context, *AddTeamMemberRequest) (*AddTeamMemberResponse, error)
+	RemoveTeamMember(context.Context, *RemoveTeamMemberRequest) (*RemoveTeamMemberResponse, error)
+	GrantSpaceRole(context.Context, *GrantSpaceRoleRequest) (*GrantSpaceRoleResponse, error)
+	RevokeSpaceRole(context.Context, *RevokeSpaceRoleRequest) (*RevokeSpaceRoleResponse, error)
 	mustEmbedUnimplementedKoinoniaServiceServer()
 }
 
@@ -930,6 +1012,24 @@ func (UnimplementedKoinoniaServiceServer) ResolveEmbed(context.Context, *Resolve
 }
 func (UnimplementedKoinoniaServiceServer) Subscribe(*SubscribeRequest, grpc.ServerStreamingServer[Invalidation]) error {
 	return status.Error(codes.Unimplemented, "method Subscribe not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) CreateTeam(context.Context, *CreateTeamRequest) (*CreateTeamResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateTeam not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) DeleteTeam(context.Context, *DeleteTeamRequest) (*DeleteTeamResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteTeam not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) AddTeamMember(context.Context, *AddTeamMemberRequest) (*AddTeamMemberResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AddTeamMember not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) RemoveTeamMember(context.Context, *RemoveTeamMemberRequest) (*RemoveTeamMemberResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RemoveTeamMember not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) GrantSpaceRole(context.Context, *GrantSpaceRoleRequest) (*GrantSpaceRoleResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GrantSpaceRole not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) RevokeSpaceRole(context.Context, *RevokeSpaceRoleRequest) (*RevokeSpaceRoleResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RevokeSpaceRole not implemented")
 }
 func (UnimplementedKoinoniaServiceServer) mustEmbedUnimplementedKoinoniaServiceServer() {}
 func (UnimplementedKoinoniaServiceServer) testEmbeddedByValue()                         {}
@@ -1798,6 +1898,114 @@ func _KoinoniaService_Subscribe_Handler(srv interface{}, stream grpc.ServerStrea
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type KoinoniaService_SubscribeServer = grpc.ServerStreamingServer[Invalidation]
 
+func _KoinoniaService_CreateTeam_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateTeamRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).CreateTeam(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_CreateTeam_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).CreateTeam(ctx, req.(*CreateTeamRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_DeleteTeam_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteTeamRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).DeleteTeam(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_DeleteTeam_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).DeleteTeam(ctx, req.(*DeleteTeamRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_AddTeamMember_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddTeamMemberRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).AddTeamMember(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_AddTeamMember_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).AddTeamMember(ctx, req.(*AddTeamMemberRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_RemoveTeamMember_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveTeamMemberRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).RemoveTeamMember(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_RemoveTeamMember_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).RemoveTeamMember(ctx, req.(*RemoveTeamMemberRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_GrantSpaceRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GrantSpaceRoleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).GrantSpaceRole(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_GrantSpaceRole_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).GrantSpaceRole(ctx, req.(*GrantSpaceRoleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_RevokeSpaceRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RevokeSpaceRoleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).RevokeSpaceRole(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_RevokeSpaceRole_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).RevokeSpaceRole(ctx, req.(*RevokeSpaceRoleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // KoinoniaService_ServiceDesc is the grpc.ServiceDesc for KoinoniaService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1988,6 +2196,30 @@ var KoinoniaService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ResolveEmbed",
 			Handler:    _KoinoniaService_ResolveEmbed_Handler,
+		},
+		{
+			MethodName: "CreateTeam",
+			Handler:    _KoinoniaService_CreateTeam_Handler,
+		},
+		{
+			MethodName: "DeleteTeam",
+			Handler:    _KoinoniaService_DeleteTeam_Handler,
+		},
+		{
+			MethodName: "AddTeamMember",
+			Handler:    _KoinoniaService_AddTeamMember_Handler,
+		},
+		{
+			MethodName: "RemoveTeamMember",
+			Handler:    _KoinoniaService_RemoveTeamMember_Handler,
+		},
+		{
+			MethodName: "GrantSpaceRole",
+			Handler:    _KoinoniaService_GrantSpaceRole_Handler,
+		},
+		{
+			MethodName: "RevokeSpaceRole",
+			Handler:    _KoinoniaService_RevokeSpaceRole_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
