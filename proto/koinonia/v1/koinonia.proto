@@ -131,6 +131,8 @@ service KoinoniaService {
   // S50 — multi-space navigation (ADR-0033).
   rpc ListOwners(ListOwnersRequest) returns (ListOwnersResponse);
   rpc ListSpaces(ListSpacesRequest) returns (ListSpacesResponse);
+  // S58 — viewer+ space resolver for outside collaborators (ADR-0034).
+  rpc LookupSpace(LookupSpaceRequest) returns (LookupSpaceResponse);
 
   // S51 — drafts-as-branches UI (ADR-0027).
   rpc CreateDraft(CreateDraftRequest) returns (CreateDraftResponse);
@@ -628,6 +630,15 @@ message ListSpacesRequest {
 }
 message ListSpacesResponse {
   repeated SpaceEntry spaces = 1;
+}
+
+// S58 — viewer+ space resolver.
+message LookupSpaceRequest {
+  string owner_slug = 1;
+  string space_slug = 2;
+}
+message LookupSpaceResponse {
+  SpaceEntry space = 1;
 }
 
 // S51 — drafts-as-branches UI (ADR-0027).
