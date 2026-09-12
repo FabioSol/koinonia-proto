@@ -138,6 +138,10 @@ service KoinoniaService {
   rpc CreateDraft(CreateDraftRequest) returns (CreateDraftResponse);
   rpc ListDrafts(ListDraftsRequest) returns (ListDraftsResponse);
   rpc DiscardDraft(DiscardDraftRequest) returns (DiscardDraftResponse);
+
+  // S52 — node create/rename in the browser (main-direct, editor+).
+  rpc CreateNode(CreateNodeRequest) returns (CreateNodeResponse);
+  rpc RenameNode(RenameNodeRequest) returns (RenameNodeResponse);
 }
 
 // A node in the tree (HEAD view). draft_id empty = main.
@@ -667,3 +671,22 @@ message DiscardDraftRequest {
   string draft_id = 1;
 }
 message DiscardDraftResponse {}
+
+// S52 — node create/rename in the browser (main-direct, editor+).
+message CreateNodeRequest {
+  string parent_id = 1; // logical_id of the parent node (space root or section)
+  string name      = 2;
+  string kind      = 3; // "article" | "section"
+}
+message CreateNodeResponse {
+  string logical_id = 1;
+  int32  version    = 2;
+}
+message RenameNodeRequest {
+  string logical_id       = 1;
+  string new_name         = 2;
+  int32  expected_version = 3; // CAS guard — FailedPrecondition on mismatch
+}
+message RenameNodeResponse {
+  int32 new_version = 1;
+}
