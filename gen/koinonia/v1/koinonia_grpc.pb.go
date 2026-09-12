@@ -75,6 +75,9 @@ const (
 	KoinoniaService_RevokeSpaceRole_FullMethodName      = "/koinonia.v1.KoinoniaService/RevokeSpaceRole"
 	KoinoniaService_ListOwners_FullMethodName           = "/koinonia.v1.KoinoniaService/ListOwners"
 	KoinoniaService_ListSpaces_FullMethodName           = "/koinonia.v1.KoinoniaService/ListSpaces"
+	KoinoniaService_CreateDraft_FullMethodName          = "/koinonia.v1.KoinoniaService/CreateDraft"
+	KoinoniaService_ListDrafts_FullMethodName           = "/koinonia.v1.KoinoniaService/ListDrafts"
+	KoinoniaService_DiscardDraft_FullMethodName         = "/koinonia.v1.KoinoniaService/DiscardDraft"
 )
 
 // KoinoniaServiceClient is the client API for KoinoniaService service.
@@ -191,6 +194,10 @@ type KoinoniaServiceClient interface {
 	// S50 — multi-space navigation (ADR-0033).
 	ListOwners(ctx context.Context, in *ListOwnersRequest, opts ...grpc.CallOption) (*ListOwnersResponse, error)
 	ListSpaces(ctx context.Context, in *ListSpacesRequest, opts ...grpc.CallOption) (*ListSpacesResponse, error)
+	// S51 — drafts-as-branches UI (ADR-0027).
+	CreateDraft(ctx context.Context, in *CreateDraftRequest, opts ...grpc.CallOption) (*CreateDraftResponse, error)
+	ListDrafts(ctx context.Context, in *ListDraftsRequest, opts ...grpc.CallOption) (*ListDraftsResponse, error)
+	DiscardDraft(ctx context.Context, in *DiscardDraftRequest, opts ...grpc.CallOption) (*DiscardDraftResponse, error)
 }
 
 type koinoniaServiceClient struct {
@@ -773,6 +780,36 @@ func (c *koinoniaServiceClient) ListSpaces(ctx context.Context, in *ListSpacesRe
 	return out, nil
 }
 
+func (c *koinoniaServiceClient) CreateDraft(ctx context.Context, in *CreateDraftRequest, opts ...grpc.CallOption) (*CreateDraftResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateDraftResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_CreateDraft_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) ListDrafts(ctx context.Context, in *ListDraftsRequest, opts ...grpc.CallOption) (*ListDraftsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListDraftsResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_ListDrafts_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) DiscardDraft(ctx context.Context, in *DiscardDraftRequest, opts ...grpc.CallOption) (*DiscardDraftResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DiscardDraftResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_DiscardDraft_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // KoinoniaServiceServer is the server API for KoinoniaService service.
 // All implementations must embed UnimplementedKoinoniaServiceServer
 // for forward compatibility.
@@ -887,6 +924,10 @@ type KoinoniaServiceServer interface {
 	// S50 — multi-space navigation (ADR-0033).
 	ListOwners(context.Context, *ListOwnersRequest) (*ListOwnersResponse, error)
 	ListSpaces(context.Context, *ListSpacesRequest) (*ListSpacesResponse, error)
+	// S51 — drafts-as-branches UI (ADR-0027).
+	CreateDraft(context.Context, *CreateDraftRequest) (*CreateDraftResponse, error)
+	ListDrafts(context.Context, *ListDraftsRequest) (*ListDraftsResponse, error)
+	DiscardDraft(context.Context, *DiscardDraftRequest) (*DiscardDraftResponse, error)
 	mustEmbedUnimplementedKoinoniaServiceServer()
 }
 
@@ -1064,6 +1105,15 @@ func (UnimplementedKoinoniaServiceServer) ListOwners(context.Context, *ListOwner
 }
 func (UnimplementedKoinoniaServiceServer) ListSpaces(context.Context, *ListSpacesRequest) (*ListSpacesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListSpaces not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) CreateDraft(context.Context, *CreateDraftRequest) (*CreateDraftResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateDraft not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) ListDrafts(context.Context, *ListDraftsRequest) (*ListDraftsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListDrafts not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) DiscardDraft(context.Context, *DiscardDraftRequest) (*DiscardDraftResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DiscardDraft not implemented")
 }
 func (UnimplementedKoinoniaServiceServer) mustEmbedUnimplementedKoinoniaServiceServer() {}
 func (UnimplementedKoinoniaServiceServer) testEmbeddedByValue()                         {}
@@ -2076,6 +2126,60 @@ func _KoinoniaService_ListSpaces_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _KoinoniaService_CreateDraft_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateDraftRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).CreateDraft(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_CreateDraft_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).CreateDraft(ctx, req.(*CreateDraftRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_ListDrafts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListDraftsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).ListDrafts(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_ListDrafts_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).ListDrafts(ctx, req.(*ListDraftsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_DiscardDraft_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DiscardDraftRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).DiscardDraft(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_DiscardDraft_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).DiscardDraft(ctx, req.(*DiscardDraftRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // KoinoniaService_ServiceDesc is the grpc.ServiceDesc for KoinoniaService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -2298,6 +2402,18 @@ var KoinoniaService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListSpaces",
 			Handler:    _KoinoniaService_ListSpaces_Handler,
+		},
+		{
+			MethodName: "CreateDraft",
+			Handler:    _KoinoniaService_CreateDraft_Handler,
+		},
+		{
+			MethodName: "ListDrafts",
+			Handler:    _KoinoniaService_ListDrafts_Handler,
+		},
+		{
+			MethodName: "DiscardDraft",
+			Handler:    _KoinoniaService_DiscardDraft_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
