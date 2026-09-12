@@ -118,6 +118,15 @@ service KoinoniaService {
 
   // Real-time cache invalidation (thin deltas, no content).
   rpc Subscribe(SubscribeRequest) returns (stream Invalidation);
+
+  // Teams + outside collaborators (ADR-0034, S49): tenant-managed groups of CP
+  // users granted a fixed role on a space, plus direct per-user grants.
+  rpc CreateTeam(CreateTeamRequest) returns (CreateTeamResponse);
+  rpc DeleteTeam(DeleteTeamRequest) returns (DeleteTeamResponse);
+  rpc AddTeamMember(AddTeamMemberRequest) returns (AddTeamMemberResponse);
+  rpc RemoveTeamMember(RemoveTeamMemberRequest) returns (RemoveTeamMemberResponse);
+  rpc GrantSpaceRole(GrantSpaceRoleRequest) returns (GrantSpaceRoleResponse);
+  rpc RevokeSpaceRole(RevokeSpaceRoleRequest) returns (RevokeSpaceRoleResponse);
 }
 
 // A node in the tree (HEAD view). draft_id empty = main.
@@ -549,3 +558,42 @@ message ListOrgMembersRequest {
 message ListOrgMembersResponse {
   repeated OrgMember members = 1;
 }
+
+// S49 — Teams + outside collaborators (ADR-0034).
+
+message CreateTeamRequest {
+  string space_id = 1;
+  string name     = 2;
+  string role     = 3; // viewer | contributor | editor | owner
+}
+message CreateTeamResponse {
+  string team_id = 1;
+}
+
+message DeleteTeamRequest  { string team_id = 1; }
+message DeleteTeamResponse {}
+
+message AddTeamMemberRequest {
+  string team_id     = 1;
+  string user_handle = 2;
+}
+message AddTeamMemberResponse {}
+
+message RemoveTeamMemberRequest {
+  string team_id     = 1;
+  string user_handle = 2;
+}
+message RemoveTeamMemberResponse {}
+
+message GrantSpaceRoleRequest {
+  string space_id    = 1;
+  string user_handle = 2;
+  string role        = 3; // viewer | contributor | editor | owner
+}
+message GrantSpaceRoleResponse {}
+
+message RevokeSpaceRoleRequest {
+  string space_id    = 1;
+  string user_handle = 2;
+}
+message RevokeSpaceRoleResponse {}
