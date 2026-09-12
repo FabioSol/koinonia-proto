@@ -55,6 +55,14 @@ service KoinoniaService {
   // Logout revokes a session immediately (cookie is honoured no further).
   rpc Logout(LogoutRequest) returns (LogoutResponse);
 
+  // Org management (ADR-0034, S47). The calling user becomes the first org owner
+  // on CreateOrg; subsequent member management requires owner or admin role.
+  rpc CreateOrg(CreateOrgRequest) returns (CreateOrgResponse);
+  rpc AddOrgMember(AddOrgMemberRequest) returns (AddOrgMemberResponse);
+  rpc RemoveOrgMember(RemoveOrgMemberRequest) returns (RemoveOrgMemberResponse);
+  rpc SetOrgBasePerm(SetOrgBasePermRequest) returns (SetOrgBasePermResponse);
+  rpc ListOrgMembers(ListOrgMembersRequest) returns (ListOrgMembersResponse);
+
   // Co-editing: a short-lived room token scoped to a draft node (contributor+),
   // verified by the Hocuspocus sidecar's onAuthenticate hook (ADR-0027).
   rpc IssueRoomToken(RoomTokenRequest) returns (TokenResponse);
@@ -501,3 +509,43 @@ message LogoutRequest {
   string session_token = 1;
 }
 message LogoutResponse {}
+
+// ——— Org management (ADR-0034, S47) ———————————————————————————————————————
+
+message CreateOrgRequest {
+  string slug = 1; // globally unique owner slug ([a-z0-9][a-z0-9-]*)
+  string name = 2; // display name
+}
+message CreateOrgResponse {
+  string org_id = 1;
+}
+
+message AddOrgMemberRequest {
+  string org_id      = 1;
+  string user_handle = 2;
+  string role        = 3; // owner | admin | member
+}
+message AddOrgMemberResponse {}
+
+message RemoveOrgMemberRequest {
+  string org_id      = 1;
+  string user_handle = 2;
+}
+message RemoveOrgMemberResponse {}
+
+message SetOrgBasePermRequest {
+  string org_id    = 1;
+  string base_perm = 2; // none | read | write
+}
+message SetOrgBasePermResponse {}
+
+message OrgMember {
+  string user_handle = 1;
+  string role        = 2;
+}
+message ListOrgMembersRequest {
+  string org_id = 1;
+}
+message ListOrgMembersResponse {
+  repeated OrgMember members = 1;
+}

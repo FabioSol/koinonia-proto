@@ -39,6 +39,11 @@ const (
 	KoinoniaService_LocalLogin_FullMethodName           = "/koinonia.v1.KoinoniaService/LocalLogin"
 	KoinoniaService_ExchangeSession_FullMethodName      = "/koinonia.v1.KoinoniaService/ExchangeSession"
 	KoinoniaService_Logout_FullMethodName               = "/koinonia.v1.KoinoniaService/Logout"
+	KoinoniaService_CreateOrg_FullMethodName            = "/koinonia.v1.KoinoniaService/CreateOrg"
+	KoinoniaService_AddOrgMember_FullMethodName         = "/koinonia.v1.KoinoniaService/AddOrgMember"
+	KoinoniaService_RemoveOrgMember_FullMethodName      = "/koinonia.v1.KoinoniaService/RemoveOrgMember"
+	KoinoniaService_SetOrgBasePerm_FullMethodName       = "/koinonia.v1.KoinoniaService/SetOrgBasePerm"
+	KoinoniaService_ListOrgMembers_FullMethodName       = "/koinonia.v1.KoinoniaService/ListOrgMembers"
 	KoinoniaService_IssueRoomToken_FullMethodName       = "/koinonia.v1.KoinoniaService/IssueRoomToken"
 	KoinoniaService_CreateSpace_FullMethodName          = "/koinonia.v1.KoinoniaService/CreateSpace"
 	KoinoniaService_ImportSpaceFromGit_FullMethodName   = "/koinonia.v1.KoinoniaService/ImportSpaceFromGit"
@@ -114,6 +119,13 @@ type KoinoniaServiceClient interface {
 	ExchangeSession(ctx context.Context, in *ExchangeSessionRequest, opts ...grpc.CallOption) (*TokenResponse, error)
 	// Logout revokes a session immediately (cookie is honoured no further).
 	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutResponse, error)
+	// Org management (ADR-0034, S47). The calling user becomes the first org owner
+	// on CreateOrg; subsequent member management requires owner or admin role.
+	CreateOrg(ctx context.Context, in *CreateOrgRequest, opts ...grpc.CallOption) (*CreateOrgResponse, error)
+	AddOrgMember(ctx context.Context, in *AddOrgMemberRequest, opts ...grpc.CallOption) (*AddOrgMemberResponse, error)
+	RemoveOrgMember(ctx context.Context, in *RemoveOrgMemberRequest, opts ...grpc.CallOption) (*RemoveOrgMemberResponse, error)
+	SetOrgBasePerm(ctx context.Context, in *SetOrgBasePermRequest, opts ...grpc.CallOption) (*SetOrgBasePermResponse, error)
+	ListOrgMembers(ctx context.Context, in *ListOrgMembersRequest, opts ...grpc.CallOption) (*ListOrgMembersResponse, error)
 	// Co-editing: a short-lived room token scoped to a draft node (contributor+),
 	// verified by the Hocuspocus sidecar's onAuthenticate hook (ADR-0027).
 	IssueRoomToken(ctx context.Context, in *RoomTokenRequest, opts ...grpc.CallOption) (*TokenResponse, error)
@@ -364,6 +376,56 @@ func (c *koinoniaServiceClient) Logout(ctx context.Context, in *LogoutRequest, o
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(LogoutResponse)
 	err := c.cc.Invoke(ctx, KoinoniaService_Logout_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) CreateOrg(ctx context.Context, in *CreateOrgRequest, opts ...grpc.CallOption) (*CreateOrgResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateOrgResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_CreateOrg_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) AddOrgMember(ctx context.Context, in *AddOrgMemberRequest, opts ...grpc.CallOption) (*AddOrgMemberResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AddOrgMemberResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_AddOrgMember_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) RemoveOrgMember(ctx context.Context, in *RemoveOrgMemberRequest, opts ...grpc.CallOption) (*RemoveOrgMemberResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RemoveOrgMemberResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_RemoveOrgMember_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) SetOrgBasePerm(ctx context.Context, in *SetOrgBasePermRequest, opts ...grpc.CallOption) (*SetOrgBasePermResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SetOrgBasePermResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_SetOrgBasePerm_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) ListOrgMembers(ctx context.Context, in *ListOrgMembersRequest, opts ...grpc.CallOption) (*ListOrgMembersResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListOrgMembersResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_ListOrgMembers_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -662,6 +724,13 @@ type KoinoniaServiceServer interface {
 	ExchangeSession(context.Context, *ExchangeSessionRequest) (*TokenResponse, error)
 	// Logout revokes a session immediately (cookie is honoured no further).
 	Logout(context.Context, *LogoutRequest) (*LogoutResponse, error)
+	// Org management (ADR-0034, S47). The calling user becomes the first org owner
+	// on CreateOrg; subsequent member management requires owner or admin role.
+	CreateOrg(context.Context, *CreateOrgRequest) (*CreateOrgResponse, error)
+	AddOrgMember(context.Context, *AddOrgMemberRequest) (*AddOrgMemberResponse, error)
+	RemoveOrgMember(context.Context, *RemoveOrgMemberRequest) (*RemoveOrgMemberResponse, error)
+	SetOrgBasePerm(context.Context, *SetOrgBasePermRequest) (*SetOrgBasePermResponse, error)
+	ListOrgMembers(context.Context, *ListOrgMembersRequest) (*ListOrgMembersResponse, error)
 	// Co-editing: a short-lived room token scoped to a draft node (contributor+),
 	// verified by the Hocuspocus sidecar's onAuthenticate hook (ADR-0027).
 	IssueRoomToken(context.Context, *RoomTokenRequest) (*TokenResponse, error)
@@ -777,6 +846,21 @@ func (UnimplementedKoinoniaServiceServer) ExchangeSession(context.Context, *Exch
 }
 func (UnimplementedKoinoniaServiceServer) Logout(context.Context, *LogoutRequest) (*LogoutResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Logout not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) CreateOrg(context.Context, *CreateOrgRequest) (*CreateOrgResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateOrg not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) AddOrgMember(context.Context, *AddOrgMemberRequest) (*AddOrgMemberResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AddOrgMember not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) RemoveOrgMember(context.Context, *RemoveOrgMemberRequest) (*RemoveOrgMemberResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RemoveOrgMember not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) SetOrgBasePerm(context.Context, *SetOrgBasePermRequest) (*SetOrgBasePermResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SetOrgBasePerm not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) ListOrgMembers(context.Context, *ListOrgMembersRequest) (*ListOrgMembersResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListOrgMembers not implemented")
 }
 func (UnimplementedKoinoniaServiceServer) IssueRoomToken(context.Context, *RoomTokenRequest) (*TokenResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method IssueRoomToken not implemented")
@@ -1224,6 +1308,96 @@ func _KoinoniaService_Logout_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(KoinoniaServiceServer).Logout(ctx, req.(*LogoutRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_CreateOrg_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateOrgRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).CreateOrg(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_CreateOrg_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).CreateOrg(ctx, req.(*CreateOrgRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_AddOrgMember_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddOrgMemberRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).AddOrgMember(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_AddOrgMember_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).AddOrgMember(ctx, req.(*AddOrgMemberRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_RemoveOrgMember_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveOrgMemberRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).RemoveOrgMember(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_RemoveOrgMember_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).RemoveOrgMember(ctx, req.(*RemoveOrgMemberRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_SetOrgBasePerm_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetOrgBasePermRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).SetOrgBasePerm(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_SetOrgBasePerm_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).SetOrgBasePerm(ctx, req.(*SetOrgBasePermRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_ListOrgMembers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListOrgMembersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).ListOrgMembers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_ListOrgMembers_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).ListOrgMembers(ctx, req.(*ListOrgMembersRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1710,6 +1884,26 @@ var KoinoniaService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Logout",
 			Handler:    _KoinoniaService_Logout_Handler,
+		},
+		{
+			MethodName: "CreateOrg",
+			Handler:    _KoinoniaService_CreateOrg_Handler,
+		},
+		{
+			MethodName: "AddOrgMember",
+			Handler:    _KoinoniaService_AddOrgMember_Handler,
+		},
+		{
+			MethodName: "RemoveOrgMember",
+			Handler:    _KoinoniaService_RemoveOrgMember_Handler,
+		},
+		{
+			MethodName: "SetOrgBasePerm",
+			Handler:    _KoinoniaService_SetOrgBasePerm_Handler,
+		},
+		{
+			MethodName: "ListOrgMembers",
+			Handler:    _KoinoniaService_ListOrgMembers_Handler,
 		},
 		{
 			MethodName: "IssueRoomToken",
