@@ -131,6 +131,11 @@ service KoinoniaService {
   // S50 — multi-space navigation (ADR-0033).
   rpc ListOwners(ListOwnersRequest) returns (ListOwnersResponse);
   rpc ListSpaces(ListSpacesRequest) returns (ListSpacesResponse);
+
+  // S51 — drafts-as-branches UI (ADR-0027).
+  rpc CreateDraft(CreateDraftRequest) returns (CreateDraftResponse);
+  rpc ListDrafts(ListDraftsRequest) returns (ListDraftsResponse);
+  rpc DiscardDraft(DiscardDraftRequest) returns (DiscardDraftResponse);
 }
 
 // A node in the tree (HEAD view). draft_id empty = main.
@@ -624,3 +629,30 @@ message ListSpacesRequest {
 message ListSpacesResponse {
   repeated SpaceEntry spaces = 1;
 }
+
+// S51 — drafts-as-branches UI (ADR-0027).
+
+message DraftEntry {
+  string id         = 1;
+  string space_id   = 2;
+  string name       = 3;
+  string created_by = 4;
+  string state      = 5; // open | merged | discarded
+}
+message CreateDraftRequest {
+  string space_id = 1;
+  string name     = 2;
+}
+message CreateDraftResponse {
+  string draft_id = 1;
+}
+message ListDraftsRequest {
+  string space_id = 1;
+}
+message ListDraftsResponse {
+  repeated DraftEntry drafts = 1;
+}
+message DiscardDraftRequest {
+  string draft_id = 1;
+}
+message DiscardDraftResponse {}
