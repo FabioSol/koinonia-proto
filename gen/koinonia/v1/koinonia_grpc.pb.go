@@ -75,6 +75,7 @@ const (
 	KoinoniaService_RevokeSpaceRole_FullMethodName      = "/koinonia.v1.KoinoniaService/RevokeSpaceRole"
 	KoinoniaService_ListOwners_FullMethodName           = "/koinonia.v1.KoinoniaService/ListOwners"
 	KoinoniaService_ListSpaces_FullMethodName           = "/koinonia.v1.KoinoniaService/ListSpaces"
+	KoinoniaService_LookupSpace_FullMethodName          = "/koinonia.v1.KoinoniaService/LookupSpace"
 	KoinoniaService_CreateDraft_FullMethodName          = "/koinonia.v1.KoinoniaService/CreateDraft"
 	KoinoniaService_ListDrafts_FullMethodName           = "/koinonia.v1.KoinoniaService/ListDrafts"
 	KoinoniaService_DiscardDraft_FullMethodName         = "/koinonia.v1.KoinoniaService/DiscardDraft"
@@ -194,6 +195,8 @@ type KoinoniaServiceClient interface {
 	// S50 — multi-space navigation (ADR-0033).
 	ListOwners(ctx context.Context, in *ListOwnersRequest, opts ...grpc.CallOption) (*ListOwnersResponse, error)
 	ListSpaces(ctx context.Context, in *ListSpacesRequest, opts ...grpc.CallOption) (*ListSpacesResponse, error)
+	// S58 — viewer+ space resolver for outside collaborators (ADR-0034).
+	LookupSpace(ctx context.Context, in *LookupSpaceRequest, opts ...grpc.CallOption) (*LookupSpaceResponse, error)
 	// S51 — drafts-as-branches UI (ADR-0027).
 	CreateDraft(ctx context.Context, in *CreateDraftRequest, opts ...grpc.CallOption) (*CreateDraftResponse, error)
 	ListDrafts(ctx context.Context, in *ListDraftsRequest, opts ...grpc.CallOption) (*ListDraftsResponse, error)
@@ -780,6 +783,16 @@ func (c *koinoniaServiceClient) ListSpaces(ctx context.Context, in *ListSpacesRe
 	return out, nil
 }
 
+func (c *koinoniaServiceClient) LookupSpace(ctx context.Context, in *LookupSpaceRequest, opts ...grpc.CallOption) (*LookupSpaceResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LookupSpaceResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_LookupSpace_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *koinoniaServiceClient) CreateDraft(ctx context.Context, in *CreateDraftRequest, opts ...grpc.CallOption) (*CreateDraftResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(CreateDraftResponse)
@@ -924,6 +937,8 @@ type KoinoniaServiceServer interface {
 	// S50 — multi-space navigation (ADR-0033).
 	ListOwners(context.Context, *ListOwnersRequest) (*ListOwnersResponse, error)
 	ListSpaces(context.Context, *ListSpacesRequest) (*ListSpacesResponse, error)
+	// S58 — viewer+ space resolver for outside collaborators (ADR-0034).
+	LookupSpace(context.Context, *LookupSpaceRequest) (*LookupSpaceResponse, error)
 	// S51 — drafts-as-branches UI (ADR-0027).
 	CreateDraft(context.Context, *CreateDraftRequest) (*CreateDraftResponse, error)
 	ListDrafts(context.Context, *ListDraftsRequest) (*ListDraftsResponse, error)
@@ -1105,6 +1120,9 @@ func (UnimplementedKoinoniaServiceServer) ListOwners(context.Context, *ListOwner
 }
 func (UnimplementedKoinoniaServiceServer) ListSpaces(context.Context, *ListSpacesRequest) (*ListSpacesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListSpaces not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) LookupSpace(context.Context, *LookupSpaceRequest) (*LookupSpaceResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method LookupSpace not implemented")
 }
 func (UnimplementedKoinoniaServiceServer) CreateDraft(context.Context, *CreateDraftRequest) (*CreateDraftResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateDraft not implemented")
@@ -2126,6 +2144,24 @@ func _KoinoniaService_ListSpaces_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _KoinoniaService_LookupSpace_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LookupSpaceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).LookupSpace(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_LookupSpace_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).LookupSpace(ctx, req.(*LookupSpaceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _KoinoniaService_CreateDraft_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateDraftRequest)
 	if err := dec(in); err != nil {
@@ -2402,6 +2438,10 @@ var KoinoniaService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListSpaces",
 			Handler:    _KoinoniaService_ListSpaces_Handler,
+		},
+		{
+			MethodName: "LookupSpace",
+			Handler:    _KoinoniaService_LookupSpace_Handler,
 		},
 		{
 			MethodName: "CreateDraft",
