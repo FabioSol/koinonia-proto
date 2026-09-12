@@ -79,6 +79,8 @@ const (
 	KoinoniaService_CreateDraft_FullMethodName          = "/koinonia.v1.KoinoniaService/CreateDraft"
 	KoinoniaService_ListDrafts_FullMethodName           = "/koinonia.v1.KoinoniaService/ListDrafts"
 	KoinoniaService_DiscardDraft_FullMethodName         = "/koinonia.v1.KoinoniaService/DiscardDraft"
+	KoinoniaService_CreateNode_FullMethodName           = "/koinonia.v1.KoinoniaService/CreateNode"
+	KoinoniaService_RenameNode_FullMethodName           = "/koinonia.v1.KoinoniaService/RenameNode"
 )
 
 // KoinoniaServiceClient is the client API for KoinoniaService service.
@@ -201,6 +203,9 @@ type KoinoniaServiceClient interface {
 	CreateDraft(ctx context.Context, in *CreateDraftRequest, opts ...grpc.CallOption) (*CreateDraftResponse, error)
 	ListDrafts(ctx context.Context, in *ListDraftsRequest, opts ...grpc.CallOption) (*ListDraftsResponse, error)
 	DiscardDraft(ctx context.Context, in *DiscardDraftRequest, opts ...grpc.CallOption) (*DiscardDraftResponse, error)
+	// S52 — node create/rename in the browser (main-direct, editor+).
+	CreateNode(ctx context.Context, in *CreateNodeRequest, opts ...grpc.CallOption) (*CreateNodeResponse, error)
+	RenameNode(ctx context.Context, in *RenameNodeRequest, opts ...grpc.CallOption) (*RenameNodeResponse, error)
 }
 
 type koinoniaServiceClient struct {
@@ -823,6 +828,26 @@ func (c *koinoniaServiceClient) DiscardDraft(ctx context.Context, in *DiscardDra
 	return out, nil
 }
 
+func (c *koinoniaServiceClient) CreateNode(ctx context.Context, in *CreateNodeRequest, opts ...grpc.CallOption) (*CreateNodeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateNodeResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_CreateNode_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) RenameNode(ctx context.Context, in *RenameNodeRequest, opts ...grpc.CallOption) (*RenameNodeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RenameNodeResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_RenameNode_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // KoinoniaServiceServer is the server API for KoinoniaService service.
 // All implementations must embed UnimplementedKoinoniaServiceServer
 // for forward compatibility.
@@ -943,6 +968,9 @@ type KoinoniaServiceServer interface {
 	CreateDraft(context.Context, *CreateDraftRequest) (*CreateDraftResponse, error)
 	ListDrafts(context.Context, *ListDraftsRequest) (*ListDraftsResponse, error)
 	DiscardDraft(context.Context, *DiscardDraftRequest) (*DiscardDraftResponse, error)
+	// S52 — node create/rename in the browser (main-direct, editor+).
+	CreateNode(context.Context, *CreateNodeRequest) (*CreateNodeResponse, error)
+	RenameNode(context.Context, *RenameNodeRequest) (*RenameNodeResponse, error)
 	mustEmbedUnimplementedKoinoniaServiceServer()
 }
 
@@ -1132,6 +1160,12 @@ func (UnimplementedKoinoniaServiceServer) ListDrafts(context.Context, *ListDraft
 }
 func (UnimplementedKoinoniaServiceServer) DiscardDraft(context.Context, *DiscardDraftRequest) (*DiscardDraftResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DiscardDraft not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) CreateNode(context.Context, *CreateNodeRequest) (*CreateNodeResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateNode not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) RenameNode(context.Context, *RenameNodeRequest) (*RenameNodeResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RenameNode not implemented")
 }
 func (UnimplementedKoinoniaServiceServer) mustEmbedUnimplementedKoinoniaServiceServer() {}
 func (UnimplementedKoinoniaServiceServer) testEmbeddedByValue()                         {}
@@ -2216,6 +2250,42 @@ func _KoinoniaService_DiscardDraft_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _KoinoniaService_CreateNode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateNodeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).CreateNode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_CreateNode_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).CreateNode(ctx, req.(*CreateNodeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_RenameNode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RenameNodeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).RenameNode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_RenameNode_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).RenameNode(ctx, req.(*RenameNodeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // KoinoniaService_ServiceDesc is the grpc.ServiceDesc for KoinoniaService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -2454,6 +2524,14 @@ var KoinoniaService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DiscardDraft",
 			Handler:    _KoinoniaService_DiscardDraft_Handler,
+		},
+		{
+			MethodName: "CreateNode",
+			Handler:    _KoinoniaService_CreateNode_Handler,
+		},
+		{
+			MethodName: "RenameNode",
+			Handler:    _KoinoniaService_RenameNode_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
