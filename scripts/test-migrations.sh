@@ -157,7 +157,17 @@ psql_c -tAc "SELECT 1 FROM information_schema.tables WHERE table_name='sessions'
 psql_c -tAc "SELECT 1 FROM pg_indexes WHERE indexname='sessions_active'" | grep -q 1 \
   && echo "  ✓ sessions_active index" || { echo "  ✗ sessions_active index missing"; exit 1; }
 
+echo "apply control-plane 000004_organizations.up.sql…"
+psql_c < "$CTL_DIR/000004_organizations.up.sql"
+psql_c -tAc "SELECT 1 FROM information_schema.tables WHERE table_name='organizations'" | grep -q 1 \
+  && echo "  ✓ organizations" || { echo "  ✗ organizations missing"; exit 1; }
+psql_c -tAc "SELECT 1 FROM information_schema.tables WHERE table_name='org_members'" | grep -q 1 \
+  && echo "  ✓ org_members" || { echo "  ✗ org_members missing"; exit 1; }
+
 echo "apply control-plane down migrations (round-trip)…"
+psql_c < "$CTL_DIR/000004_organizations.down.sql"
+psql_c -tAc "SELECT 1 FROM information_schema.tables WHERE table_name='organizations'" | grep -q 1 \
+  && { echo "  ✗ organizations still present after down"; exit 1; } || echo "  ✓ 000004 down clean"
 psql_c < "$CTL_DIR/000003_auth_identities.down.sql"
 psql_c -tAc "SELECT 1 FROM information_schema.tables WHERE table_name='sessions'" | grep -q 1 \
   && { echo "  ✗ sessions still present after down"; exit 1; } || echo "  ✓ 000003 down clean"
