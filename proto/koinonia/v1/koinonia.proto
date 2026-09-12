@@ -127,6 +127,10 @@ service KoinoniaService {
   rpc RemoveTeamMember(RemoveTeamMemberRequest) returns (RemoveTeamMemberResponse);
   rpc GrantSpaceRole(GrantSpaceRoleRequest) returns (GrantSpaceRoleResponse);
   rpc RevokeSpaceRole(RevokeSpaceRoleRequest) returns (RevokeSpaceRoleResponse);
+
+  // S50 — multi-space navigation (ADR-0033).
+  rpc ListOwners(ListOwnersRequest) returns (ListOwnersResponse);
+  rpc ListSpaces(ListSpacesRequest) returns (ListSpacesResponse);
 }
 
 // A node in the tree (HEAD view). draft_id empty = main.
@@ -597,3 +601,25 @@ message RevokeSpaceRoleRequest {
   string user_handle = 2;
 }
 message RevokeSpaceRoleResponse {}
+
+// S50 — multi-space navigation (ADR-0033).
+
+message OwnerEntry {
+  string slug = 1;
+  string kind = 2; // user | org
+}
+message ListOwnersRequest {}
+message ListOwnersResponse {
+  repeated OwnerEntry owners = 1;
+}
+
+message SpaceEntry {
+  string slug     = 1;
+  string space_id = 2;
+}
+message ListSpacesRequest {
+  string owner_slug = 1;
+}
+message ListSpacesResponse {
+  repeated SpaceEntry spaces = 1;
+}

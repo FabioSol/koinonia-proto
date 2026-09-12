@@ -73,6 +73,8 @@ const (
 	KoinoniaService_RemoveTeamMember_FullMethodName     = "/koinonia.v1.KoinoniaService/RemoveTeamMember"
 	KoinoniaService_GrantSpaceRole_FullMethodName       = "/koinonia.v1.KoinoniaService/GrantSpaceRole"
 	KoinoniaService_RevokeSpaceRole_FullMethodName      = "/koinonia.v1.KoinoniaService/RevokeSpaceRole"
+	KoinoniaService_ListOwners_FullMethodName           = "/koinonia.v1.KoinoniaService/ListOwners"
+	KoinoniaService_ListSpaces_FullMethodName           = "/koinonia.v1.KoinoniaService/ListSpaces"
 )
 
 // KoinoniaServiceClient is the client API for KoinoniaService service.
@@ -186,6 +188,9 @@ type KoinoniaServiceClient interface {
 	RemoveTeamMember(ctx context.Context, in *RemoveTeamMemberRequest, opts ...grpc.CallOption) (*RemoveTeamMemberResponse, error)
 	GrantSpaceRole(ctx context.Context, in *GrantSpaceRoleRequest, opts ...grpc.CallOption) (*GrantSpaceRoleResponse, error)
 	RevokeSpaceRole(ctx context.Context, in *RevokeSpaceRoleRequest, opts ...grpc.CallOption) (*RevokeSpaceRoleResponse, error)
+	// S50 — multi-space navigation (ADR-0033).
+	ListOwners(ctx context.Context, in *ListOwnersRequest, opts ...grpc.CallOption) (*ListOwnersResponse, error)
+	ListSpaces(ctx context.Context, in *ListSpacesRequest, opts ...grpc.CallOption) (*ListSpacesResponse, error)
 }
 
 type koinoniaServiceClient struct {
@@ -748,6 +753,26 @@ func (c *koinoniaServiceClient) RevokeSpaceRole(ctx context.Context, in *RevokeS
 	return out, nil
 }
 
+func (c *koinoniaServiceClient) ListOwners(ctx context.Context, in *ListOwnersRequest, opts ...grpc.CallOption) (*ListOwnersResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListOwnersResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_ListOwners_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) ListSpaces(ctx context.Context, in *ListSpacesRequest, opts ...grpc.CallOption) (*ListSpacesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListSpacesResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_ListSpaces_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // KoinoniaServiceServer is the server API for KoinoniaService service.
 // All implementations must embed UnimplementedKoinoniaServiceServer
 // for forward compatibility.
@@ -859,6 +884,9 @@ type KoinoniaServiceServer interface {
 	RemoveTeamMember(context.Context, *RemoveTeamMemberRequest) (*RemoveTeamMemberResponse, error)
 	GrantSpaceRole(context.Context, *GrantSpaceRoleRequest) (*GrantSpaceRoleResponse, error)
 	RevokeSpaceRole(context.Context, *RevokeSpaceRoleRequest) (*RevokeSpaceRoleResponse, error)
+	// S50 — multi-space navigation (ADR-0033).
+	ListOwners(context.Context, *ListOwnersRequest) (*ListOwnersResponse, error)
+	ListSpaces(context.Context, *ListSpacesRequest) (*ListSpacesResponse, error)
 	mustEmbedUnimplementedKoinoniaServiceServer()
 }
 
@@ -1030,6 +1058,12 @@ func (UnimplementedKoinoniaServiceServer) GrantSpaceRole(context.Context, *Grant
 }
 func (UnimplementedKoinoniaServiceServer) RevokeSpaceRole(context.Context, *RevokeSpaceRoleRequest) (*RevokeSpaceRoleResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RevokeSpaceRole not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) ListOwners(context.Context, *ListOwnersRequest) (*ListOwnersResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListOwners not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) ListSpaces(context.Context, *ListSpacesRequest) (*ListSpacesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListSpaces not implemented")
 }
 func (UnimplementedKoinoniaServiceServer) mustEmbedUnimplementedKoinoniaServiceServer() {}
 func (UnimplementedKoinoniaServiceServer) testEmbeddedByValue()                         {}
@@ -2006,6 +2040,42 @@ func _KoinoniaService_RevokeSpaceRole_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _KoinoniaService_ListOwners_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListOwnersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).ListOwners(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_ListOwners_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).ListOwners(ctx, req.(*ListOwnersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_ListSpaces_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListSpacesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).ListSpaces(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_ListSpaces_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).ListSpaces(ctx, req.(*ListSpacesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // KoinoniaService_ServiceDesc is the grpc.ServiceDesc for KoinoniaService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -2220,6 +2290,14 @@ var KoinoniaService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RevokeSpaceRole",
 			Handler:    _KoinoniaService_RevokeSpaceRole_Handler,
+		},
+		{
+			MethodName: "ListOwners",
+			Handler:    _KoinoniaService_ListOwners_Handler,
+		},
+		{
+			MethodName: "ListSpaces",
+			Handler:    _KoinoniaService_ListSpaces_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
