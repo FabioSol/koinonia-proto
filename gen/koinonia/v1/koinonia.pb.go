@@ -5738,6 +5738,7 @@ type SpaceEntry struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Slug          string                 `protobuf:"bytes,1,opt,name=slug,proto3" json:"slug,omitempty"`
 	SpaceId       string                 `protobuf:"bytes,2,opt,name=space_id,json=spaceId,proto3" json:"space_id,omitempty"`
+	RootLogicalId string                 `protobuf:"bytes,3,opt,name=root_logical_id,json=rootLogicalId,proto3" json:"root_logical_id,omitempty"` // logical_id of the space's root node (kind='space')
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -5782,6 +5783,13 @@ func (x *SpaceEntry) GetSlug() string {
 func (x *SpaceEntry) GetSpaceId() string {
 	if x != nil {
 		return x.SpaceId
+	}
+	return ""
+}
+
+func (x *SpaceEntry) GetRootLogicalId() string {
+	if x != nil {
+		return x.RootLogicalId
 	}
 	return ""
 }
@@ -6262,11 +6270,12 @@ const file_koinonia_v1_koinonia_proto_rawDesc = "" +
 	"\x04kind\x18\x02 \x01(\tR\x04kind\"\x13\n" +
 	"\x11ListOwnersRequest\"E\n" +
 	"\x12ListOwnersResponse\x12/\n" +
-	"\x06owners\x18\x01 \x03(\v2\x17.koinonia.v1.OwnerEntryR\x06owners\";\n" +
+	"\x06owners\x18\x01 \x03(\v2\x17.koinonia.v1.OwnerEntryR\x06owners\"c\n" +
 	"\n" +
 	"SpaceEntry\x12\x12\n" +
 	"\x04slug\x18\x01 \x01(\tR\x04slug\x12\x19\n" +
-	"\bspace_id\x18\x02 \x01(\tR\aspaceId\"2\n" +
+	"\bspace_id\x18\x02 \x01(\tR\aspaceId\x12&\n" +
+	"\x0froot_logical_id\x18\x03 \x01(\tR\rrootLogicalId\"2\n" +
 	"\x11ListSpacesRequest\x12\x1d\n" +
 	"\n" +
 	"owner_slug\x18\x01 \x01(\tR\townerSlug\"E\n" +

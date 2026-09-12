@@ -614,8 +614,9 @@ message ListOwnersResponse {
 }
 
 message SpaceEntry {
-  string slug     = 1;
-  string space_id = 2;
+  string slug             = 1;
+  string space_id         = 2;
+  string root_logical_id  = 3; // logical_id of the space's root node (kind='space')
 }
 message ListSpacesRequest {
   string owner_slug = 1;
