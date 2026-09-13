@@ -127,6 +127,10 @@ service KoinoniaService {
   rpc RemoveTeamMember(RemoveTeamMemberRequest) returns (RemoveTeamMemberResponse);
   rpc GrantSpaceRole(GrantSpaceRoleRequest) returns (GrantSpaceRoleResponse);
   rpc RevokeSpaceRole(RevokeSpaceRoleRequest) returns (RevokeSpaceRoleResponse);
+  // S54 — list RPCs for the management UI.
+  rpc ListTeams(ListTeamsRequest) returns (ListTeamsResponse);
+  rpc ListTeamMembers(ListTeamMembersRequest) returns (ListTeamMembersResponse);
+  rpc ListSpaceGrants(ListSpaceGrantsRequest) returns (ListSpaceGrantsResponse);
 
   // S50 — multi-space navigation (ADR-0033).
   rpc ListOwners(ListOwnersRequest) returns (ListOwnersResponse);
@@ -613,11 +617,31 @@ message RevokeSpaceRoleRequest {
 }
 message RevokeSpaceRoleResponse {}
 
+// S54 — list RPCs for the management UI.
+message ListTeamsRequest  { string space_id = 1; }
+message TeamEntry {
+  string team_id = 1;
+  string name    = 2;
+  string role    = 3;
+}
+message ListTeamsResponse { repeated TeamEntry teams = 1; }
+
+message ListTeamMembersRequest  { string team_id = 1; }
+message ListTeamMembersResponse { repeated string user_handles = 1; }
+
+message ListSpaceGrantsRequest  { string space_id = 1; }
+message SpaceGrantEntry {
+  string user_handle = 1;
+  string role        = 2;
+}
+message ListSpaceGrantsResponse { repeated SpaceGrantEntry grants = 1; }
+
 // S50 — multi-space navigation (ADR-0033).
 
 message OwnerEntry {
-  string slug = 1;
-  string kind = 2; // user | org
+  string slug   = 1;
+  string kind   = 2; // user | org
+  string org_id = 3; // UUID of the org (only set when kind = "org", S54)
 }
 message ListOwnersRequest {}
 message ListOwnersResponse {
