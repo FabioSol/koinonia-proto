@@ -73,6 +73,9 @@ const (
 	KoinoniaService_RemoveTeamMember_FullMethodName     = "/koinonia.v1.KoinoniaService/RemoveTeamMember"
 	KoinoniaService_GrantSpaceRole_FullMethodName       = "/koinonia.v1.KoinoniaService/GrantSpaceRole"
 	KoinoniaService_RevokeSpaceRole_FullMethodName      = "/koinonia.v1.KoinoniaService/RevokeSpaceRole"
+	KoinoniaService_ListTeams_FullMethodName            = "/koinonia.v1.KoinoniaService/ListTeams"
+	KoinoniaService_ListTeamMembers_FullMethodName      = "/koinonia.v1.KoinoniaService/ListTeamMembers"
+	KoinoniaService_ListSpaceGrants_FullMethodName      = "/koinonia.v1.KoinoniaService/ListSpaceGrants"
 	KoinoniaService_ListOwners_FullMethodName           = "/koinonia.v1.KoinoniaService/ListOwners"
 	KoinoniaService_ListSpaces_FullMethodName           = "/koinonia.v1.KoinoniaService/ListSpaces"
 	KoinoniaService_LookupSpace_FullMethodName          = "/koinonia.v1.KoinoniaService/LookupSpace"
@@ -194,6 +197,10 @@ type KoinoniaServiceClient interface {
 	RemoveTeamMember(ctx context.Context, in *RemoveTeamMemberRequest, opts ...grpc.CallOption) (*RemoveTeamMemberResponse, error)
 	GrantSpaceRole(ctx context.Context, in *GrantSpaceRoleRequest, opts ...grpc.CallOption) (*GrantSpaceRoleResponse, error)
 	RevokeSpaceRole(ctx context.Context, in *RevokeSpaceRoleRequest, opts ...grpc.CallOption) (*RevokeSpaceRoleResponse, error)
+	// S54 — list RPCs for the management UI.
+	ListTeams(ctx context.Context, in *ListTeamsRequest, opts ...grpc.CallOption) (*ListTeamsResponse, error)
+	ListTeamMembers(ctx context.Context, in *ListTeamMembersRequest, opts ...grpc.CallOption) (*ListTeamMembersResponse, error)
+	ListSpaceGrants(ctx context.Context, in *ListSpaceGrantsRequest, opts ...grpc.CallOption) (*ListSpaceGrantsResponse, error)
 	// S50 — multi-space navigation (ADR-0033).
 	ListOwners(ctx context.Context, in *ListOwnersRequest, opts ...grpc.CallOption) (*ListOwnersResponse, error)
 	ListSpaces(ctx context.Context, in *ListSpacesRequest, opts ...grpc.CallOption) (*ListSpacesResponse, error)
@@ -768,6 +775,36 @@ func (c *koinoniaServiceClient) RevokeSpaceRole(ctx context.Context, in *RevokeS
 	return out, nil
 }
 
+func (c *koinoniaServiceClient) ListTeams(ctx context.Context, in *ListTeamsRequest, opts ...grpc.CallOption) (*ListTeamsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListTeamsResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_ListTeams_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) ListTeamMembers(ctx context.Context, in *ListTeamMembersRequest, opts ...grpc.CallOption) (*ListTeamMembersResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListTeamMembersResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_ListTeamMembers_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) ListSpaceGrants(ctx context.Context, in *ListSpaceGrantsRequest, opts ...grpc.CallOption) (*ListSpaceGrantsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListSpaceGrantsResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_ListSpaceGrants_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *koinoniaServiceClient) ListOwners(ctx context.Context, in *ListOwnersRequest, opts ...grpc.CallOption) (*ListOwnersResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListOwnersResponse)
@@ -959,6 +996,10 @@ type KoinoniaServiceServer interface {
 	RemoveTeamMember(context.Context, *RemoveTeamMemberRequest) (*RemoveTeamMemberResponse, error)
 	GrantSpaceRole(context.Context, *GrantSpaceRoleRequest) (*GrantSpaceRoleResponse, error)
 	RevokeSpaceRole(context.Context, *RevokeSpaceRoleRequest) (*RevokeSpaceRoleResponse, error)
+	// S54 — list RPCs for the management UI.
+	ListTeams(context.Context, *ListTeamsRequest) (*ListTeamsResponse, error)
+	ListTeamMembers(context.Context, *ListTeamMembersRequest) (*ListTeamMembersResponse, error)
+	ListSpaceGrants(context.Context, *ListSpaceGrantsRequest) (*ListSpaceGrantsResponse, error)
 	// S50 — multi-space navigation (ADR-0033).
 	ListOwners(context.Context, *ListOwnersRequest) (*ListOwnersResponse, error)
 	ListSpaces(context.Context, *ListSpacesRequest) (*ListSpacesResponse, error)
@@ -1142,6 +1183,15 @@ func (UnimplementedKoinoniaServiceServer) GrantSpaceRole(context.Context, *Grant
 }
 func (UnimplementedKoinoniaServiceServer) RevokeSpaceRole(context.Context, *RevokeSpaceRoleRequest) (*RevokeSpaceRoleResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RevokeSpaceRole not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) ListTeams(context.Context, *ListTeamsRequest) (*ListTeamsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListTeams not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) ListTeamMembers(context.Context, *ListTeamMembersRequest) (*ListTeamMembersResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListTeamMembers not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) ListSpaceGrants(context.Context, *ListSpaceGrantsRequest) (*ListSpaceGrantsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListSpaceGrants not implemented")
 }
 func (UnimplementedKoinoniaServiceServer) ListOwners(context.Context, *ListOwnersRequest) (*ListOwnersResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListOwners not implemented")
@@ -2142,6 +2192,60 @@ func _KoinoniaService_RevokeSpaceRole_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _KoinoniaService_ListTeams_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListTeamsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).ListTeams(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_ListTeams_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).ListTeams(ctx, req.(*ListTeamsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_ListTeamMembers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListTeamMembersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).ListTeamMembers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_ListTeamMembers_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).ListTeamMembers(ctx, req.(*ListTeamMembersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_ListSpaceGrants_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListSpaceGrantsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).ListSpaceGrants(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_ListSpaceGrants_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).ListSpaceGrants(ctx, req.(*ListSpaceGrantsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _KoinoniaService_ListOwners_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListOwnersRequest)
 	if err := dec(in); err != nil {
@@ -2500,6 +2604,18 @@ var KoinoniaService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RevokeSpaceRole",
 			Handler:    _KoinoniaService_RevokeSpaceRole_Handler,
+		},
+		{
+			MethodName: "ListTeams",
+			Handler:    _KoinoniaService_ListTeams_Handler,
+		},
+		{
+			MethodName: "ListTeamMembers",
+			Handler:    _KoinoniaService_ListTeamMembers_Handler,
+		},
+		{
+			MethodName: "ListSpaceGrants",
+			Handler:    _KoinoniaService_ListSpaceGrants_Handler,
 		},
 		{
 			MethodName: "ListOwners",
