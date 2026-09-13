@@ -2325,6 +2325,7 @@ type TokenResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
 	ExpiresAt     int64                  `protobuf:"varint,2,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"` // unix seconds
+	RoomName      string                 `protobuf:"bytes,3,opt,name=room_name,json=roomName,proto3" json:"room_name,omitempty"`     // set by IssueRoomToken; empty for login/agent tokens
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2371,6 +2372,13 @@ func (x *TokenResponse) GetExpiresAt() int64 {
 		return x.ExpiresAt
 	}
 	return 0
+}
+
+func (x *TokenResponse) GetRoomName() string {
+	if x != nil {
+		return x.RoomName
+	}
+	return ""
 }
 
 type IssueAgentTokenRequest struct {
@@ -7087,11 +7095,12 @@ const file_koinonia_v1_koinonia_proto_rawDesc = "" +
 	"\bspace_id\x18\x01 \x01(\tR\aspaceId\x12&\n" +
 	"\x0froot_logical_id\x18\x02 \x01(\tR\rrootLogicalId\"(\n" +
 	"\fLoginRequest\x12\x18\n" +
-	"\asubject\x18\x01 \x01(\tR\asubject\"D\n" +
+	"\asubject\x18\x01 \x01(\tR\asubject\"a\n" +
 	"\rTokenResponse\x12\x14\n" +
 	"\x05token\x18\x01 \x01(\tR\x05token\x12\x1d\n" +
 	"\n" +
-	"expires_at\x18\x02 \x01(\x03R\texpiresAt\".\n" +
+	"expires_at\x18\x02 \x01(\x03R\texpiresAt\x12\x1b\n" +
+	"\troom_name\x18\x03 \x01(\tR\broomName\".\n" +
 	"\x16IssueAgentTokenRequest\x12\x14\n" +
 	"\x05agent\x18\x01 \x01(\tR\x05agent\"L\n" +
 	"\x10RoomTokenRequest\x12\x19\n" +
