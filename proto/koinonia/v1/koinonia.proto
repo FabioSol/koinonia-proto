@@ -82,6 +82,8 @@ service KoinoniaService {
   rpc ExportSpaceToNewRepo(ExportToNewRepoRequest) returns (SyncJob);
   // Export the diff since last sync back to the linked origin as a branch + PR.
   rpc ExportSpaceToOrigin(ExportToOriginRequest) returns (SyncJob);
+  // Transfer a space to a new owner (same-shard: sync restamp; cross-shard: async job).
+  rpc TransferSpace(TransferSpaceRequest) returns (SyncJob);
 
   // Document export (ADR-0025): render a subtree to PDF (goldmark→HTML→PDF, display
   // -config aware) or bundle it as a ZIP of blobs at their paths. Runs as an async
@@ -305,16 +307,22 @@ message ExportToNewRepoRequest {
 message ExportToOriginRequest {
   string space_id = 1; // must be a linked space (imported/exported before)
 }
-// SyncJob is the state of an async import/export job.
+// SyncJob is the state of an async import/export/transfer job.
 message SyncJob {
   string id = 1;
   string space_id = 2; // set once the space exists
-  string kind = 3;     // "import" | "export"
+  string kind = 3;     // "import" | "export" | "space-transfer"
   string state = 4;    // pending|running|succeeded|failed
   int32 progress = 5;  // 0..100
   string detail = 6;   // current step
   string error = 7;    // populated on failure
   string result = 8;   // space id / repo / PR url
+}
+
+message TransferSpaceRequest {
+  string space_id       = 1; // space to transfer (must be owner of this space)
+  string new_owner_slug = 2; // destination owner slug (user or org)
+  string new_space_slug = 3; // slug for the space in the new owner's namespace
 }
 
 // Document export (ADR-0025): PDF of an article/section, or ZIP of a subtree.
