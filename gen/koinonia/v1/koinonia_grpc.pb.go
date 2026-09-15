@@ -39,6 +39,9 @@ const (
 	KoinoniaService_LocalLogin_FullMethodName           = "/koinonia.v1.KoinoniaService/LocalLogin"
 	KoinoniaService_ExchangeSession_FullMethodName      = "/koinonia.v1.KoinoniaService/ExchangeSession"
 	KoinoniaService_Logout_FullMethodName               = "/koinonia.v1.KoinoniaService/Logout"
+	KoinoniaService_CompleteOIDCLogin_FullMethodName    = "/koinonia.v1.KoinoniaService/CompleteOIDCLogin"
+	KoinoniaService_StartDeviceCode_FullMethodName      = "/koinonia.v1.KoinoniaService/StartDeviceCode"
+	KoinoniaService_PollDeviceCode_FullMethodName       = "/koinonia.v1.KoinoniaService/PollDeviceCode"
 	KoinoniaService_CreateOrg_FullMethodName            = "/koinonia.v1.KoinoniaService/CreateOrg"
 	KoinoniaService_AddOrgMember_FullMethodName         = "/koinonia.v1.KoinoniaService/AddOrgMember"
 	KoinoniaService_RemoveOrgMember_FullMethodName      = "/koinonia.v1.KoinoniaService/RemoveOrgMember"
@@ -137,6 +140,11 @@ type KoinoniaServiceClient interface {
 	ExchangeSession(ctx context.Context, in *ExchangeSessionRequest, opts ...grpc.CallOption) (*TokenResponse, error)
 	// Logout revokes a session immediately (cookie is honoured no further).
 	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutResponse, error)
+	// OIDC social sign-in (S46): browser OAuth2 authorization-code callback.
+	CompleteOIDCLogin(ctx context.Context, in *CompleteOIDCLoginRequest, opts ...grpc.CallOption) (*TokenResponse, error)
+	// Device-code flow for CLI / FUSE (S46): start the flow and poll for completion.
+	StartDeviceCode(ctx context.Context, in *StartDeviceCodeRequest, opts ...grpc.CallOption) (*DeviceCodeResponse, error)
+	PollDeviceCode(ctx context.Context, in *PollDeviceCodeRequest, opts ...grpc.CallOption) (*TokenResponse, error)
 	// Org management (ADR-0034, S47). The calling user becomes the first org owner
 	// on CreateOrg; subsequent member management requires owner or admin role.
 	CreateOrg(ctx context.Context, in *CreateOrgRequest, opts ...grpc.CallOption) (*CreateOrgResponse, error)
@@ -420,6 +428,36 @@ func (c *koinoniaServiceClient) Logout(ctx context.Context, in *LogoutRequest, o
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(LogoutResponse)
 	err := c.cc.Invoke(ctx, KoinoniaService_Logout_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) CompleteOIDCLogin(ctx context.Context, in *CompleteOIDCLoginRequest, opts ...grpc.CallOption) (*TokenResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TokenResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_CompleteOIDCLogin_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) StartDeviceCode(ctx context.Context, in *StartDeviceCodeRequest, opts ...grpc.CallOption) (*DeviceCodeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeviceCodeResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_StartDeviceCode_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *koinoniaServiceClient) PollDeviceCode(ctx context.Context, in *PollDeviceCodeRequest, opts ...grpc.CallOption) (*TokenResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TokenResponse)
+	err := c.cc.Invoke(ctx, KoinoniaService_PollDeviceCode_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -948,6 +986,11 @@ type KoinoniaServiceServer interface {
 	ExchangeSession(context.Context, *ExchangeSessionRequest) (*TokenResponse, error)
 	// Logout revokes a session immediately (cookie is honoured no further).
 	Logout(context.Context, *LogoutRequest) (*LogoutResponse, error)
+	// OIDC social sign-in (S46): browser OAuth2 authorization-code callback.
+	CompleteOIDCLogin(context.Context, *CompleteOIDCLoginRequest) (*TokenResponse, error)
+	// Device-code flow for CLI / FUSE (S46): start the flow and poll for completion.
+	StartDeviceCode(context.Context, *StartDeviceCodeRequest) (*DeviceCodeResponse, error)
+	PollDeviceCode(context.Context, *PollDeviceCodeRequest) (*TokenResponse, error)
 	// Org management (ADR-0034, S47). The calling user becomes the first org owner
 	// on CreateOrg; subsequent member management requires owner or admin role.
 	CreateOrg(context.Context, *CreateOrgRequest) (*CreateOrgResponse, error)
@@ -1096,6 +1139,15 @@ func (UnimplementedKoinoniaServiceServer) ExchangeSession(context.Context, *Exch
 }
 func (UnimplementedKoinoniaServiceServer) Logout(context.Context, *LogoutRequest) (*LogoutResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Logout not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) CompleteOIDCLogin(context.Context, *CompleteOIDCLoginRequest) (*TokenResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CompleteOIDCLogin not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) StartDeviceCode(context.Context, *StartDeviceCodeRequest) (*DeviceCodeResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method StartDeviceCode not implemented")
+}
+func (UnimplementedKoinoniaServiceServer) PollDeviceCode(context.Context, *PollDeviceCodeRequest) (*TokenResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method PollDeviceCode not implemented")
 }
 func (UnimplementedKoinoniaServiceServer) CreateOrg(context.Context, *CreateOrgRequest) (*CreateOrgResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateOrg not implemented")
@@ -1612,6 +1664,60 @@ func _KoinoniaService_Logout_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(KoinoniaServiceServer).Logout(ctx, req.(*LogoutRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_CompleteOIDCLogin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CompleteOIDCLoginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).CompleteOIDCLogin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_CompleteOIDCLogin_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).CompleteOIDCLogin(ctx, req.(*CompleteOIDCLoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_StartDeviceCode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StartDeviceCodeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).StartDeviceCode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_StartDeviceCode_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).StartDeviceCode(ctx, req.(*StartDeviceCodeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KoinoniaService_PollDeviceCode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PollDeviceCodeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KoinoniaServiceServer).PollDeviceCode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KoinoniaService_PollDeviceCode_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KoinoniaServiceServer).PollDeviceCode(ctx, req.(*PollDeviceCodeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2512,6 +2618,18 @@ var KoinoniaService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Logout",
 			Handler:    _KoinoniaService_Logout_Handler,
+		},
+		{
+			MethodName: "CompleteOIDCLogin",
+			Handler:    _KoinoniaService_CompleteOIDCLogin_Handler,
+		},
+		{
+			MethodName: "StartDeviceCode",
+			Handler:    _KoinoniaService_StartDeviceCode_Handler,
+		},
+		{
+			MethodName: "PollDeviceCode",
+			Handler:    _KoinoniaService_PollDeviceCode_Handler,
 		},
 		{
 			MethodName: "CreateOrg",
