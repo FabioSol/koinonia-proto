@@ -54,6 +54,11 @@ service KoinoniaService {
   rpc ExchangeSession(ExchangeSessionRequest) returns (TokenResponse);
   // Logout revokes a session immediately (cookie is honoured no further).
   rpc Logout(LogoutRequest) returns (LogoutResponse);
+  // OIDC social sign-in (S46): browser OAuth2 authorization-code callback.
+  rpc CompleteOIDCLogin(CompleteOIDCLoginRequest) returns (TokenResponse);
+  // Device-code flow for CLI / FUSE (S46): start the flow and poll for completion.
+  rpc StartDeviceCode(StartDeviceCodeRequest) returns (DeviceCodeResponse);
+  rpc PollDeviceCode(PollDeviceCodeRequest) returns (TokenResponse);
 
   // Org management (ADR-0034, S47). The calling user becomes the first org owner
   // on CreateOrg; subsequent member management requires owner or admin role.
@@ -546,6 +551,30 @@ message LogoutRequest {
   string session_token = 1;
 }
 message LogoutResponse {}
+
+// OIDC / social sign-in messages (S46).
+
+message CompleteOIDCLoginRequest {
+  string provider = 1; // e.g. "github"
+  string code     = 2; // authorization code from the OAuth2 callback
+}
+
+message StartDeviceCodeRequest {
+  string provider = 1; // e.g. "github"
+}
+
+message DeviceCodeResponse {
+  string device_code      = 1;
+  string user_code        = 2;
+  string verification_uri = 3;
+  int64  interval         = 4; // seconds between polls
+  int64  expires_in       = 5; // seconds until device_code expires
+}
+
+message PollDeviceCodeRequest {
+  string provider    = 1;
+  string device_code = 2;
+}
 
 // ——— Org management (ADR-0034, S47) ———————————————————————————————————————
 
